@@ -18,16 +18,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'System Admin',
-            'email' => 'admin@unicrop.test',
-            'password' => bcrypt('password'),
-            'role' => Role::Admin,
-        ]);
+        User::updateOrCreate(
+            ['email' => env('ADMIN_EMAIL', 'admin@unicrop.test')],
+            [
+                'name' => 'System Admin',
+                'password' => bcrypt(env('ADMIN_PASSWORD', 'password')),
+                'role' => Role::Admin,
+            ]
+        );
 
-        $a4 = Size::create(['name' => 'A4 Standard (8.27 x 11.69)', 'rate' => 10, 'is_default' => true]);
-        Size::create(['name' => 'A3 Premium (11.69 x 16.53)', 'rate' => 20]);
-        Size::create(['name' => '12 x 18 inch (Digital)', 'rate' => 30]);
+        if (Size::count() === 0) {
+            Size::create(['name' => 'A4 Standard (8.27 x 11.69)', 'rate' => 10, 'is_default' => true]);
+            Size::create(['name' => 'A3 Premium (11.69 x 16.53)', 'rate' => 20]);
+            Size::create(['name' => '12 x 18 inch (Digital)', 'rate' => 30]);
+        }
 
         Setting::set('cutting_rate', '5');
     }
