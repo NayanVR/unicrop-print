@@ -6,6 +6,7 @@ use App\Enums\JobStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\URL;
 
 #[Fillable([
     'uploaded_by', 'note', 'file_path', 'file_name', 'size_id', 'rate', 'sheets',
@@ -41,5 +42,15 @@ class PrintJob extends Model
     public function fileUrl(): ?string
     {
         return $this->file_path ? route('jobs.file', $this) : null;
+    }
+
+    public function downloadUrl(): ?string
+    {
+        return $this->file_path ? route('jobs.file', ['printJob' => $this, 'download' => 1]) : null;
+    }
+
+    public function publicShareUrl(): ?string
+    {
+        return $this->file_path ? URL::signedRoute('jobs.public-file', ['printJob' => $this]) : null;
     }
 }
