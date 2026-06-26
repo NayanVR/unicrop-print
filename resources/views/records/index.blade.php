@@ -17,6 +17,19 @@
                 <option value="{{ $y }}" @selected($year === $y)>{{ $y }}</option>
             @endforeach
         </select>
+        <select name="status" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
+            <option value="all" @selected($status === 'all')>All Statuses</option>
+            @foreach (\App\Enums\JobStatus::cases() as $case)
+                <option value="{{ $case->value }}" @selected($status === $case->value)>{{ ucfirst($case->value) }}</option>
+            @endforeach
+        </select>
+        <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file name..." class="rounded border-slate-300 px-3 py-2 text-sm flex-1 min-w-[200px]">
+        <input type="hidden" name="sort" value="{{ $sort }}">
+        <input type="hidden" name="direction" value="{{ $direction }}">
+        <button type="submit" class="bg-slate-800 text-white text-sm px-4 py-2 rounded">Apply</button>
+        @if ($status !== 'all' || $search !== '' || $month !== 'all' || $year !== (string) now()->year)
+            <a href="{{ route('records.index') }}" class="text-xs text-slate-500 underline">Reset filters</a>
+        @endif
     </form>
 
     <div class="grid grid-cols-2 gap-5 mb-6">
@@ -30,19 +43,32 @@
         </div>
     </div>
 
+    @php
+        $sortLink = function (string $column, string $label) use ($sort, $direction) {
+            $newDirection = ($sort === $column && $direction === 'asc') ? 'desc' : 'asc';
+            $url = request()->fullUrlWithQuery(['sort' => $column, 'direction' => $newDirection]);
+            $icon = $sort === $column
+                ? ($direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down')
+                : 'fa-sort text-slate-300';
+
+            return '<a href="'.$url.'" class="inline-flex items-center gap-1 hover:text-slate-800">'.$label.' <i class="fa-solid '.$icon.' text-[10px]"></i></a>';
+        };
+    @endphp
+
     <div class="bg-white border border-slate-200 rounded-xl p-6">
         <div class="overflow-x-auto rounded-lg border border-slate-200">
             <table class="w-full text-sm text-left">
                 <thead class="bg-slate-50 text-slate-500">
                     <tr>
-                        <th class="px-4 py-3 font-semibold">Job ID</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('id', 'Job ID') !!}</th>
                         <th class="px-4 py-3 font-semibold">File Options</th>
-                        <th class="px-4 py-3 font-semibold">Print & Cut Details</th>
-                        <th class="px-4 py-3 font-semibold">Total Amount</th>
-                        <th class="px-4 py-3 font-semibold">Uploaded</th>
-                        <th class="px-4 py-3 font-semibold">Printed</th>
-                        <th class="px-4 py-3 font-semibold">Cut</th>
-                        <th class="px-4 py-3 font-semibold">Last Updated</th>
+                        <th class="px-4 py-3 font-semibold">Print Details</th>
+                        <th class="px-4 py-3 font-semibold">Cut Details</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('total_amount', 'Total Amount') !!}</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('created_at', 'Uploaded') !!}</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('printed_at', 'Printed') !!}</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('cut_at', 'Cut') !!}</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('updated_at', 'Last Updated') !!}</th>
                         <th class="px-4 py-3 font-semibold">Status</th>
                     </tr>
                 </thead>
@@ -59,9 +85,11 @@
                                 <strong>Note:</strong> {{ $job->note }}<br>
                                 <span class="text-xs text-slate-500">File: {{ $job->file_name }}</span>
                             </td>
-                            <td class="px-4 py-3">
-                                <span class="text-sky-600 text-xs">Print: {{ $job->sheets }} x {{ $job->rate }} = {{ $job->print_total }} Rs</span><br>
-                                <span class="text-purple-600 text-xs">Cut: {{ $job->cutting_jobs }} x {{ $job->cutting_rate }} = {{ $job->cutting_total }} Rs</span>
+                            <td class="px-4 py-3 text-sky-600 text-xs whitespace-nowrap">
+                                {{ $job->sheets }} x {{ $job->rate }} = {{ $job->print_total }} Rs
+                            </td>
+                            <td class="px-4 py-3 text-purple-600 text-xs whitespace-nowrap">
+                                {{ $job->cutting_jobs }} x {{ $job->cutting_rate }} = {{ $job->cutting_total }} Rs
                             </td>
                             <td class="px-4 py-3 font-bold text-emerald-600">
                                 {{ $job->status->value === 'completed' ? number_format($job->total_amount, 2).' Rs' : '-' }}
@@ -95,10 +123,14 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="px-4 py-6 text-center text-slate-500">No records found for selected filter.</td></tr>
+                        <tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">No records found for selected filter.</td></tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-4">
+            {{ $jobs->links() }}
         </div>
     </div>
 </x-app-layout>

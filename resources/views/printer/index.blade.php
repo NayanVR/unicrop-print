@@ -27,9 +27,22 @@
                                 <strong>Note: {{ $job->note }}</strong><br>
                                 <span class="text-xs text-slate-500">File: {{ $job->file_name }}</span><br>
                                 @if ($job->fileUrl())
-                                    <a href="{{ $job->fileUrl() }}" target="_blank" class="inline-flex items-center gap-1 mt-1 bg-purple-500 text-white text-xs px-3 py-1 rounded">
-                                        <i class="fa-solid fa-print"></i> View/Print
-                                    </a>
+                                    <div class="flex flex-wrap gap-1 mt-1" x-data="{ copied: false }">
+                                        <a href="{{ $job->fileUrl() }}" target="_blank" class="inline-flex items-center gap-1 bg-purple-500 text-white text-xs px-3 py-1 rounded">
+                                            <i class="fa-solid fa-print"></i> View/Print
+                                        </a>
+                                        <a href="{{ $job->downloadUrl() }}" class="inline-flex items-center gap-1 bg-slate-600 text-white text-xs px-3 py-1 rounded">
+                                            <i class="fa-solid fa-download"></i> Download
+                                        </a>
+                                        <button
+                                            type="button"
+                                            @click="navigator.clipboard.writeText('{{ $job->publicShareUrl() }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                            class="inline-flex items-center gap-1 bg-sky-500 text-white text-xs px-3 py-1 rounded"
+                                        >
+                                            <i class="fa-solid fa-link"></i>
+                                            <span x-text="copied ? 'Copied!' : 'Share Link'"></span>
+                                        </button>
+                                    </div>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
