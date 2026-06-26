@@ -33,7 +33,7 @@
         <div class="sidebar-energy w-64 flex flex-col p-4 justify-between overflow-y-auto">
             <div>
                 <div class="mb-8 pl-2">
-                    <x-unicrop-logo text-color="text-white" />
+                    <x-unicrop-logo variant="light" />
                 </div>
                 <nav class="flex flex-col gap-2">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
