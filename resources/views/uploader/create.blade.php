@@ -25,6 +25,15 @@
             </div>
 
             <div class="mb-5">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Print Station <span class="text-red-500">*</span></label>
+                <select name="print_station_id" required class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                    @foreach ($stations as $station)
+                        <option value="{{ $station->id }}">{{ $station->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-5">
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Select Size</label>
                 <select name="size_id" x-model="sizeId" class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                     @foreach ($sizes as $size)

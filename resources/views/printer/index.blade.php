@@ -12,6 +12,7 @@
                 <thead class="bg-slate-50 text-slate-500">
                     <tr>
                         <th class="px-4 py-3 font-semibold">Job ID</th>
+                        <th class="px-4 py-3 font-semibold">Station</th>
                         <th class="px-4 py-3 font-semibold">File & Note</th>
                         <th class="px-4 py-3 font-semibold">Upload Time</th>
                         <th class="px-4 py-3 font-semibold">Size & Rate</th>
@@ -23,6 +24,9 @@
                     @forelse ($jobs as $job)
                         <tr>
                             <td class="px-4 py-3">#{{ $job->id }}</td>
+                            <td class="px-4 py-3">
+                                <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded">{{ $job->printStation?->name ?? '-' }}</span>
+                            </td>
                             <td class="px-4 py-3">
                                 <strong>Note: {{ $job->note }}</strong><br>
                                 <span class="text-xs text-slate-500">File: {{ $job->file_name }}</span><br>
@@ -60,13 +64,17 @@
                                     @csrf
                                     @method('PATCH')
                                 </form>
-                                <button type="submit" form="print-job-{{ $job->id }}" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded inline-flex items-center gap-1">
-                                    Mark Printed <i class="fa-solid fa-arrow-right"></i>
-                                </button>
+                                @if ($canPrint)
+                                    <button type="submit" form="print-job-{{ $job->id }}" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded inline-flex items-center gap-1">
+                                        Mark Printed <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                @else
+                                    <span class="text-xs text-slate-400 italic">Printing blocked</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">No pending prints.</td></tr>
+                        <tr><td colspan="7" class="px-4 py-6 text-center text-slate-500">No pending prints.</td></tr>
                     @endforelse
                 </tbody>
             </table>

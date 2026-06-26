@@ -10,67 +10,47 @@
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        @keyframes blob-move {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(40px, -60px) scale(1.15); }
-            66% { transform: translate(-30px, 30px) scale(0.9); }
+        .leaf-pattern {
+            background-color: #0f4023;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(111, 191, 63, 0.35) 0, transparent 18%),
+                radial-gradient(circle at 80% 20%, rgba(111, 191, 63, 0.3) 0, transparent 20%),
+                radial-gradient(circle at 60% 70%, rgba(63, 155, 63, 0.4) 0, transparent 22%),
+                radial-gradient(circle at 30% 85%, rgba(111, 191, 63, 0.3) 0, transparent 20%),
+                linear-gradient(160deg, #0f4023 0%, #1b5e2e 45%, #3f9b3f 100%);
         }
-        .blob {
-            animation: blob-move 14s ease-in-out infinite;
-            filter: blur(60px);
+        .leaf-shape {
+            position: absolute;
+            border-radius: 0% 60% 0% 60%;
+            background: rgba(255, 255, 255, 0.08);
         }
-        .blob-2 { animation-delay: -4s; }
-        .blob-3 { animation-delay: -8s; }
-
-        .login-bg {
-            background: linear-gradient(135deg, #ff0080 0%, #7928ca 35%, #2afadf 70%, #ff8a00 100%);
-            background-size: 300% 300%;
-            animation: gradient-shift 12s ease infinite;
+        @keyframes sway {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(6deg); }
         }
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-        }
+        .sway { animation: sway 6s ease-in-out infinite; }
+        .sway-slow { animation: sway 9s ease-in-out infinite; animation-delay: -3s; }
     </style>
 </head>
 
 <body class="font-sans antialiased">
-    <div class="login-bg relative min-h-screen flex items-center justify-center overflow-hidden px-4">
+    <div class="min-h-screen flex items-center justify-center bg-[#f4f1ea] p-4">
+        <div class="w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2 bg-white border border-[#0f4023]/10">
 
-        <!-- Decorative animated blobs -->
-        <div class="blob absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full bg-fuchsia-400 opacity-50"></div>
-        <div class="blob blob-2 absolute bottom-[-15%] right-[-10%] w-[28rem] h-[28rem] rounded-full bg-cyan-300 opacity-50"></div>
-        <div class="blob blob-3 absolute top-[20%] right-[15%] w-72 h-72 rounded-full bg-amber-300 opacity-40"></div>
+            <!-- Left: form -->
+            <div class="px-8 sm:px-12 py-12 flex flex-col justify-center">
+                <x-unicrop-logo class="mb-10" />
 
-        <div class="relative z-10 w-full sm:max-w-md">
-
-            <div class="flex justify-center mb-6">
-                <a href="/" class="inline-flex items-center justify-center w-20 h-20 rounded-2xl glass-card shadow-xl">
-                    <x-application-logo class="w-12 h-12 fill-current text-white" />
-                </a>
-            </div>
-
-            <div class="glass-card rounded-3xl shadow-2xl px-8 py-10">
-                <h1 class="text-3xl font-extrabold text-white text-center tracking-tight drop-shadow-sm">
-                    Welcome Back, Creator
+                <h1 class="text-3xl font-extrabold text-[#1b5e2e] tracking-tight">
+                    {{ __('Welcome Back!') }}
                 </h1>
-                <p class="text-white/70 text-center mt-2 mb-8 text-sm">
-                    Sign in and bring your designs to life
-                </p>
+                <p class="text-gray-500 mt-1 mb-8">{{ __('Please log in to your account.') }}</p>
 
                 <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -79,45 +59,73 @@
 
                     <!-- Email Address -->
                     <div>
-                        <label for="email" class="block text-sm font-semibold text-white/90 mb-1">{{ __('Email') }}</label>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
-                            class="block w-full rounded-xl border-0 bg-white/20 text-white placeholder-white/60 px-4 py-3 shadow-inner focus:bg-white/30 focus:ring-2 focus:ring-fuchsia-300 transition" />
+                            placeholder="{{ __('Email Address') }}"
+                            class="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-800 placeholder-gray-400 focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30 transition" />
                         <x-input-error :messages="$errors->get('email')" class="mt-2" />
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <label for="password" class="block text-sm font-semibold text-white/90 mb-1">{{ __('Password') }}</label>
                         <input id="password" type="password" name="password" required autocomplete="current-password"
-                            class="block w-full rounded-xl border-0 bg-white/20 text-white placeholder-white/60 px-4 py-3 shadow-inner focus:bg-white/30 focus:ring-2 focus:ring-fuchsia-300 transition" />
+                            placeholder="{{ __('Password') }}"
+                            class="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-800 placeholder-gray-400 focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30 transition" />
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
                     </div>
 
-                    <!-- Remember Me -->
+                    <!-- Remember Me / Forgot -->
                     <div class="flex items-center justify-between">
                         <label for="remember_me" class="inline-flex items-center cursor-pointer">
                             <input id="remember_me" type="checkbox" name="remember"
-                                class="rounded border-white/40 bg-white/20 text-fuchsia-500 focus:ring-fuchsia-300">
-                            <span class="ms-2 text-sm text-white/80">{{ __('Remember me') }}</span>
+                                class="rounded border-gray-300 text-[#3f9b3f] focus:ring-[#3f9b3f]">
+                            <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
                         </label>
 
                         @if (Route::has('password.request'))
-                            <a class="text-sm text-white/80 hover:text-white underline-offset-2 hover:underline transition" href="{{ route('password.request') }}">
-                                {{ __('Forgot your password?') }}
+                            <a class="text-sm font-medium text-rose-500 hover:text-rose-600 transition" href="{{ route('password.request') }}">
+                                {{ __('Forgot password?') }}
                             </a>
                         @endif
                     </div>
 
-                    <button type="submit"
-                        class="w-full rounded-xl py-3 font-bold text-white bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 shadow-lg hover:shadow-fuchsia-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
-                        {{ __('Log in') }}
-                    </button>
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button type="submit"
+                            class="flex-1 rounded-lg py-3 font-semibold text-white bg-[#1b5e2e] hover:bg-[#164d26] shadow-md transition">
+                            {{ __('Login') }}
+                        </button>
+
+                        @if (Route::has('register'))
+                            <a href="{{ route('register') }}"
+                                class="flex-1 text-center rounded-lg py-3 font-semibold text-[#1b5e2e] border border-[#1b5e2e] hover:bg-[#1b5e2e]/5 transition">
+                                {{ __('Create account') }}
+                            </a>
+                        @endif
+                    </div>
                 </form>
+
+                <p class="text-xs text-gray-400 mt-10">
+                    {{ __('By signing up you agree to our terms and that you have read our data policy.') }}
+                </p>
             </div>
 
-            <p class="text-center text-white/60 text-xs mt-6">
-                &copy; {{ date('Y') }} {{ config('app.name', 'Unicrop Print') }}. Made for designers.
-            </p>
+            <!-- Right: green nature panel -->
+            <div class="leaf-pattern relative hidden md:block overflow-hidden">
+                <div class="leaf-shape sway w-40 h-40 top-10 left-10"></div>
+                <div class="leaf-shape sway-slow w-56 h-56 bottom-16 -right-10"></div>
+                <div class="leaf-shape sway w-32 h-32 bottom-1/3 left-1/4"></div>
+                <div class="leaf-shape sway-slow w-24 h-24 top-1/3 right-10"></div>
+
+                <div class="relative z-10 h-full flex flex-col items-center justify-center text-center px-10">
+                    <svg viewBox="0 0 100 100" class="w-20 h-20 mb-6">
+                        <path d="M50 90C50 90 20 65 20 40C20 22 33 10 50 10C67 10 80 22 80 40C80 65 50 90 50 90Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="2"/>
+                        <path d="M50 80V30M50 30C50 30 35 35 35 50M50 30C50 30 65 35 65 50" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <h2 class="text-white text-2xl font-bold">{{ __('Grow with Unicrop Biochem') }}</h2>
+                    <p class="text-white/70 mt-2 max-w-xs">
+                        {{ __('Sustainable bio-solutions for healthier crops and a greener tomorrow.') }}
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </body>

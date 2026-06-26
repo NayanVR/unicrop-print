@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Role;
 use App\Models\Setting;
 use App\Models\Size;
 use App\Models\User;
@@ -23,7 +22,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'System Admin',
                 'password' => bcrypt(env('ADMIN_PASSWORD', 'password')),
-                'role' => Role::Admin,
+                'is_admin' => true,
             ]
         );
 
