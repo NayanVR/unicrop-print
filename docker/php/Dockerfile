@@ -46,6 +46,11 @@ COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# .dockerignore strips storage/framework/{cache,sessions,views} and
+# storage/logs from the build context (to avoid baking in stale local dev
+# state), so recreate the directory structure Laravel expects at runtime.
+RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/testing storage/framework/views storage/logs bootstrap/cache
+
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
