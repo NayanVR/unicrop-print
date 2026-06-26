@@ -33,6 +33,8 @@ class UploaderController extends Controller
 
         $size = Size::findOrFail($validated['size_id']);
         $file = $request->file('design_file');
+        $fileSize = $file->getSize();
+        $mimeType = $file->getClientMimeType();
 
         try {
             $path = $file->store('designs', 's3');
@@ -48,6 +50,8 @@ class UploaderController extends Controller
             'note' => $validated['note'] ?: '-',
             'file_path' => $path,
             'file_name' => $file->getClientOriginalName(),
+            'file_size' => $fileSize,
+            'mime_type' => $mimeType,
             'size_id' => $size->id,
             'rate' => $size->rate,
             'sheets' => $validated['sheets'],

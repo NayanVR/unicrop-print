@@ -87,8 +87,24 @@
         <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm shadow-[#1b5e2e]/5 lg:col-span-2 self-start">
             <h3 class="font-bold text-[#1b5e2e] mb-5 flex items-center gap-2"><i class="fa-solid fa-users"></i> All Users</h3>
 
+            <form method="GET" action="{{ route('users.index') }}" class="flex flex-wrap gap-3 items-center bg-slate-50 p-3 rounded-lg mb-4">
+                <input type="text" name="search" value="{{ $search }}" placeholder="Search name or email..." class="rounded-lg border-slate-300 px-3 py-2 text-sm flex-1 min-w-[180px]">
+                <select name="sort" onchange="this.form.submit()" class="rounded-lg border-slate-300 px-3 py-2 text-sm">
+                    <option value="name" @selected($sort === 'name')>Sort: Name</option>
+                    <option value="created_at" @selected($sort === 'created_at')>Sort: Date Added</option>
+                </select>
+                <select name="direction" onchange="this.form.submit()" class="rounded-lg border-slate-300 px-3 py-2 text-sm">
+                    <option value="asc" @selected($direction === 'asc')>Ascending</option>
+                    <option value="desc" @selected($direction === 'desc')>Descending</option>
+                </select>
+                <button type="submit" class="bg-[#1b5e2e] text-white text-sm px-4 py-2 rounded-lg">Apply</button>
+                @if ($search !== '')
+                    <a href="{{ route('users.index') }}" class="text-xs text-slate-500 underline">Reset</a>
+                @endif
+            </form>
+
             <div class="space-y-3">
-                @foreach ($users as $user)
+                @forelse ($users as $user)
                     <div class="border border-slate-200 bg-slate-50 rounded-xl p-4" x-data="{ printStation: {{ in_array('print_station', $user->permissions ?? []) ? 'true' : 'false' }}, isAdmin: {{ $user->is_admin ? 'true' : 'false' }} }">
                         <div class="flex items-center justify-between mb-2">
                             <div>
@@ -163,7 +179,9 @@
                             </button>
                         </form>
                     </div>
-                @endforeach
+                @empty
+                    <p class="text-center text-slate-500 text-sm py-6">No users found for selected filter.</p>
+                @endforelse
             </div>
         </div>
     </div>
