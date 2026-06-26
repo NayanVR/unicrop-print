@@ -17,6 +17,13 @@ FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache \
         bash \
+        icu-libs \
+        libzip \
+        oniguruma \
+        libpng \
+        freetype \
+        libjpeg-turbo \
+    && apk add --no-cache --virtual .build-deps \
         icu-dev \
         libzip-dev \
         oniguruma-dev \
@@ -25,8 +32,7 @@ RUN apk add --no-cache \
         libjpeg-turbo-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) pdo_mysql intl zip gd bcmath opcache \
-    && apk del icu-dev libzip-dev oniguruma-dev libpng-dev freetype-dev libjpeg-turbo-dev
-
+    && apk del .build-deps
 WORKDIR /var/www/html
 
 COPY --from=vendor /app /var/www/html
