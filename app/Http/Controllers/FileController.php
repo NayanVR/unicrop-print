@@ -4,22 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\PrintJob;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileController extends Controller
 {
-    public function show(Request $request, PrintJob $printJob): Response
+    public function show(Request $request, PrintJob $printJob): StreamedResponse
     {
         return $this->serve($request, $printJob);
     }
 
-    public function showPublic(Request $request, PrintJob $printJob): Response
+    public function showPublic(Request $request, PrintJob $printJob): StreamedResponse
     {
         return $this->serve($request, $printJob);
     }
 
-    private function serve(Request $request, PrintJob $printJob): Response
+    private function serve(Request $request, PrintJob $printJob): StreamedResponse
     {
         abort_unless(Storage::disk('s3')->exists($printJob->file_path), 404);
 
