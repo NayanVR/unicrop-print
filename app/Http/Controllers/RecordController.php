@@ -13,7 +13,7 @@ class RecordController extends Controller
         $month = $request->query('month', 'all');
         $year = $request->query('year', (string) now()->year);
 
-        $query = PrintJob::with('size')->latest();
+        $query = PrintJob::with('size')->orderByDesc('updated_at');
 
         if ($month !== 'all') {
             $query->whereMonth('cut_at', $month);

@@ -39,7 +39,10 @@
                         <th class="px-4 py-3 font-semibold">File Options</th>
                         <th class="px-4 py-3 font-semibold">Print & Cut Details</th>
                         <th class="px-4 py-3 font-semibold">Total Amount</th>
-                        <th class="px-4 py-3 font-semibold">Timestamps</th>
+                        <th class="px-4 py-3 font-semibold">Uploaded</th>
+                        <th class="px-4 py-3 font-semibold">Printed</th>
+                        <th class="px-4 py-3 font-semibold">Cut</th>
+                        <th class="px-4 py-3 font-semibold">Last Updated</th>
                         <th class="px-4 py-3 font-semibold">Status</th>
                     </tr>
                 </thead>
@@ -63,10 +66,25 @@
                             <td class="px-4 py-3 font-bold text-emerald-600">
                                 {{ $job->status->value === 'completed' ? number_format($job->total_amount, 2).' Rs' : '-' }}
                             </td>
-                            <td class="px-4 py-3 text-xs text-slate-600 min-w-[160px]">
-                                <div><i class="fa-solid fa-arrow-up text-sky-500"></i> Up: {{ $job->created_at->format('d/m/Y h:i A') }}</div>
-                                <div class="mt-1"><i class="fa-solid fa-print text-orange-500"></i> Pr: {{ $job->printed_at?->format('d/m/Y h:i A') ?? '-' }}</div>
-                                <div class="mt-1"><i class="fa-solid fa-scissors text-emerald-500"></i> Ct: {{ $job->cut_at?->format('d/m/Y h:i A') ?? '-' }}</div>
+                            <td class="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">
+                                <i class="fa-solid fa-arrow-up text-sky-500"></i> {{ $job->created_at->format('d/m/Y h:i A') }}
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">
+                                @if ($job->printed_at)
+                                    <i class="fa-solid fa-print text-orange-500"></i> {{ $job->printed_at->format('d/m/Y h:i A') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">
+                                @if ($job->cut_at)
+                                    <i class="fa-solid fa-scissors text-emerald-500"></i> {{ $job->cut_at->format('d/m/Y h:i A') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">
+                                {{ $job->updated_at->format('d/m/Y h:i A') }}
                             </td>
                             <td class="px-4 py-3">
                                 @if ($job->status->value === 'completed')
@@ -77,7 +95,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">No records found for selected filter.</td></tr>
+                        <tr><td colspan="9" class="px-4 py-6 text-center text-slate-500">No records found for selected filter.</td></tr>
                     @endforelse
                 </tbody>
             </table>
