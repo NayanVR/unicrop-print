@@ -6,7 +6,6 @@ use App\Enums\JobStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'uploaded_by', 'note', 'file_path', 'file_name', 'size_id', 'rate', 'sheets',
@@ -41,6 +40,6 @@ class PrintJob extends Model
 
     public function fileUrl(): ?string
     {
-        return $this->file_path ? Storage::disk('s3')->url($this->file_path) : null;
+        return $this->file_path ? route('jobs.file', $this) : null;
     }
 }

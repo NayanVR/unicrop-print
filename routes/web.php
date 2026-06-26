@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CuttingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
@@ -13,6 +14,8 @@ Route::redirect('/', '/dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/jobs/{printJob}/file', [FileController::class, 'show'])->name('jobs.file');
 
     Route::middleware('role:admin,uploader')->group(function () {
         Route::get('/uploader', [UploaderController::class, 'create'])->name('uploader.create');

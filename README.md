@@ -14,6 +14,10 @@ Roles are enforced by the `role` middleware (`app/Http/Middleware/EnsureRole.php
 
 `pending` (uploaded, waiting to print) → `cutting` (printed, waiting to cut) → `completed` (cut, billed). See `App\Models\PrintJob` and `App\Enums\JobStatus`.
 
+## File storage & serving
+
+Design files are stored on Garage via the `s3` filesystem disk and are never exposed to the public internet directly. The Garage container has no published ports — the `app` container talks to it over the internal Docker network (`AWS_ENDPOINT=http://garage:3900`), and browsers download files through `GET /jobs/{printJob}/file` (`App\Http\Controllers\FileController`), which streams the file from Garage through Laravel. This means you don't need a second domain/subdomain for storage, and `AWS_URL` is unused.
+
 ## Running locally with Docker
 
 ```bash
@@ -32,7 +36,7 @@ This starts:
 
 ### One-time Garage setup
 
-Garage needs its single-node layout applied and a bucket/access key created before the app can upload files. After `docker compose up -d`, run:
+Garage needs its single-node layout applied and a bucket/access key created before the app can upload files. This runs entirely over the internal Docker network via `docker compose exec` — no ports need to be published. After `docker compose up -d`, run:
 
 ```bash
 docker compose exec garage /scripts/garage-setup.sh
@@ -60,7 +64,7 @@ The repo's `docker-compose.yml` can be deployed as-is on any Docker Compose-base
 
 - Set all secrets (`APP_KEY`, `DB_PASSWORD`, `GARAGE_RPC_SECRET`, `GARAGE_ADMIN_TOKEN`, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) through the platform's environment variable UI rather than committing a real `.env`.
 - Run the Garage one-time setup (above) once against the deployed `garage` container, then put the resulting key/secret back into the platform's env vars and redeploy `app`.
-- Point your platform's reverse proxy / domain at the `nginx` service's port 80.
+- Point your platform's reverse proxy / domain at the `nginx` service's container port `80` — that's the only port that needs to be publicly reachable. Neither `mysql` nor `garage` need a public port.
 
 ## Local development without Docker
 
