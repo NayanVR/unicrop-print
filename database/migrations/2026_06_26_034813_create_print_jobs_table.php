@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('print_jobs')) {
+            return;
+        }
+
         Schema::create('print_jobs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('uploaded_by')->constrained('users');
