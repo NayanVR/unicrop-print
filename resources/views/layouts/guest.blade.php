@@ -16,6 +16,7 @@
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
+            <p style="background:red;color:white;padding:8px;font-size:20px;">UNICROP-PRINT-DEPLOY-MARKER-12345</p>
             <div>
                 <a href="/">
                     <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
