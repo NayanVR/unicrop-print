@@ -59,6 +59,9 @@
                         <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('settings.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-gear w-4"></i> System Settings
                         </a>
+                        <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('users.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+                            <i class="fa-solid fa-user-gear w-4"></i> Manage Users
+                        </a>
                     @endif
                 </nav>
             </div>
