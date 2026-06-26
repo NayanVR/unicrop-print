@@ -6,7 +6,9 @@ use App\Models\PrintJob;
 use App\Models\Size;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class UploaderController extends Controller
 {
@@ -28,7 +30,14 @@ class UploaderController extends Controller
 
         $size = Size::findOrFail($validated['size_id']);
         $file = $request->file('design_file');
-        $path = $file->store('designs', 's3');
+
+        try {
+            $path = $file->store('designs', 's3');
+        } catch (Throwable $e) {
+            Log::error('Design file upload to S3 failed', ['error' => $e->getMessage()]);
+
+            return back()->withInput()->with('status', 'Upload failed: storage is unavailable. Please try again or contact an admin.');
+        }
 
         PrintJob::create([
             'uploaded_by' => $request->user()->id,
