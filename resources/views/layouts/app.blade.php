@@ -39,26 +39,32 @@
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                         <i class="fa-solid fa-chart-pie w-4"></i> Dashboard
                     </a>
-                    @if (auth()->user()->isAdmin() || auth()->user()->isUploader())
+                    @if (auth()->user()->hasPermission('upload_design'))
                         <a href="{{ route('uploader.create') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('uploader.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-cloud-arrow-up w-4"></i> Upload Design
                         </a>
                     @endif
-                    @if (auth()->user()->isAdmin() || auth()->user()->isPrinter())
+                    @if (auth()->user()->hasPermission('print_station'))
                         <a href="{{ route('printer.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('printer.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-print w-4"></i> Print Station
                         </a>
+                    @endif
+                    @if (auth()->user()->hasPermission('cutting_station'))
                         <a href="{{ route('cutting.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('cutting.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-scissors w-4"></i> Cutting Station
                         </a>
                     @endif
-                    <a href="{{ route('records.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('records.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
-                        <i class="fa-solid fa-receipt w-4"></i> Billing Logs
-                    </a>
-                    @if (auth()->user()->isAdmin())
+                    @if (auth()->user()->hasPermission('billing_logs'))
+                        <a href="{{ route('records.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('records.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+                            <i class="fa-solid fa-receipt w-4"></i> Billing Logs
+                        </a>
+                    @endif
+                    @if (auth()->user()->hasPermission('system_settings'))
                         <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('settings.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-gear w-4"></i> System Settings
                         </a>
+                    @endif
+                    @if (auth()->user()->isAdmin())
                         <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('users.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-user-gear w-4"></i> Manage Users
                         </a>
@@ -69,7 +75,7 @@
             <div class="border-t border-white/15 pt-4 flex items-center justify-between text-white mt-5">
                 <div>
                     <span class="font-semibold text-sm block">{{ auth()->user()->name }}</span>
-                    <span class="text-xs text-[#bff047] capitalize font-medium">{{ auth()->user()->role->value }}</span>
+                    <span class="text-xs text-[#bff047] capitalize font-medium">{{ auth()->user()->isAdmin() ? 'Admin' : 'Staff' }}</span>
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\URL;
 
 #[Fillable([
-    'uploaded_by', 'note', 'file_path', 'file_name', 'size_id', 'rate', 'sheets',
+    'uploaded_by', 'print_station_id', 'note', 'file_path', 'file_name', 'size_id', 'rate', 'sheets',
     'print_total', 'cutting_jobs', 'cutting_rate', 'cutting_total', 'total_amount',
     'status', 'printed_at', 'cut_at',
 ])]
@@ -37,6 +37,11 @@ class PrintJob extends Model
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function printStation(): BelongsTo
+    {
+        return $this->belongsTo(PrintStation::class);
     }
 
     public function fileUrl(): ?string

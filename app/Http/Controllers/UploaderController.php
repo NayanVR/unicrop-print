@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PrintJob;
+use App\Models\PrintStation;
 use App\Models\Size;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class UploaderController extends Controller
     {
         return view('uploader.create', [
             'sizes' => Size::orderBy('name')->get(),
+            'stations' => PrintStation::orderBy('name')->get(),
         ]);
     }
 
@@ -25,6 +27,7 @@ class UploaderController extends Controller
             'design_file' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:20480'],
             'note' => ['nullable', 'string', 'max:255'],
             'size_id' => ['required', 'exists:sizes,id'],
+            'print_station_id' => ['required', 'exists:print_stations,id'],
             'sheets' => ['required', 'integer', 'min:1'],
         ]);
 
@@ -41,6 +44,7 @@ class UploaderController extends Controller
 
         PrintJob::create([
             'uploaded_by' => $request->user()->id,
+            'print_station_id' => $validated['print_station_id'],
             'note' => $validated['note'] ?: '-',
             'file_path' => $path,
             'file_name' => $file->getClientOriginalName(),
