@@ -36,7 +36,14 @@ COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# nginx shares /var/www/html/public via a named volume so it can serve
+# static files and act as the fastcgi document root. Named volumes only
+# auto-populate from the image once, so keep a pristine copy here that
+# the entrypoint resyncs from on every boot (handles redeploys with new
+# asset hashes).
+RUN cp -a /var/www/html/public /var/www/html-public-src
+
+RUN chown -R www-data:www-data /var/www/html /var/www/html-public-src
 
 USER www-data
 
