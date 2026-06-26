@@ -13,7 +13,7 @@ services:
         depends_on:
             mysql:
                 condition: service_healthy
-            garage:
+            unicrop-print-garage:
                 condition: service_started
 
     mysql:
@@ -34,7 +34,12 @@ services:
             timeout: 5s
             retries: 10
 
-    garage:
+    # Named with an app-specific prefix (not just "garage") because this
+    # stack's app container also joins Dokploy's shared proxy network,
+    # where a generic "garage" alias can collide with another project's
+    # service of the same name and silently route requests to the wrong
+    # Garage cluster.
+    unicrop-print-garage:
         image: dxflrs/garage:v1.0.1
         restart: unless-stopped
         environment:
