@@ -17,6 +17,8 @@ FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache \
         bash \
+        nginx \
+        supervisor \
         icu-libs \
         libzip \
         oniguruma \
@@ -39,20 +41,13 @@ COPY --from=vendor /app /var/www/html
 COPY --from=assets /app/public/build /var/www/html/public/build
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-app.ini
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# nginx shares /var/www/html/public via a named volume so it can serve
-# static files and act as the fastcgi document root. Named volumes only
-# auto-populate from the image once, so keep a pristine copy here that
-# the entrypoint resyncs from on every boot (handles redeploys with new
-# asset hashes).
-RUN cp -a /var/www/html/public /var/www/html-public-src
+RUN chown -R www-data:www-data /var/www/html
 
-RUN chown -R www-data:www-data /var/www/html /var/www/html-public-src
-
-USER www-data
-
-EXPOSE 9000
+EXPOSE 80
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

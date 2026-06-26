@@ -29,10 +29,11 @@ This starts:
 
 | Service | Purpose                                   |
 |---------|--------------------------------------------|
-| `app`   | PHP-FPM running the Laravel app, runs migrations on boot |
-| `nginx` | Web server, exposed on `APP_PORT` (default `8080`) |
+| `app`   | nginx + PHP-FPM (managed by supervisord) running the Laravel app on port 80, runs migrations on boot |
 | `mysql` | MySQL 8.4 database |
 | `garage`| S3-compatible object storage for uploaded designs |
+
+nginx and PHP-FPM run in the same `app` container (talking over `localhost`) rather than as separate services — this avoids depending on cross-container Docker networking/DNS for the fastcgi connection, which is unreliable on some platforms (see Dokploy notes below).
 
 ### One-time Garage setup
 
@@ -56,7 +57,7 @@ docker compose exec app php artisan db:seed
 
 Creates `admin@unicrop.test` / `password` with the `admin` role, default sizes, and a default cutting rate. Create `uploader`/`printer` users from the admin's `/register` flow or via `php artisan tinker`, then set their `role` column.
 
-Visit `http://localhost:8080`.
+Visit `http://localhost:8080` (or add `ports: ["${APP_PORT:-8080}:80"]` to the `app` service if you removed it for a platform deploy — see below).
 
 ## Deploying (e.g. Dokploy)
 
@@ -64,7 +65,7 @@ The repo's `docker-compose.yml` can be deployed as-is on any Docker Compose-base
 
 - Set all secrets (`APP_KEY`, `DB_PASSWORD`, `GARAGE_RPC_SECRET`, `GARAGE_ADMIN_TOKEN`, `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) through the platform's environment variable UI rather than committing a real `.env`.
 - Run the Garage one-time setup (above) once against the deployed `garage` container, then put the resulting key/secret back into the platform's env vars and redeploy `app`.
-- Point your platform's reverse proxy / domain at the `nginx` service's container port `80` — that's the only port that needs to be publicly reachable. Neither `mysql` nor `garage` need a public port.
+- Point your platform's reverse proxy / domain at the **`app`** service's container port `80` — that's the only public domain you need. Don't add a domain for `garage` or `mysql`; neither needs to be publicly reachable (file downloads are proxied through `app`, see above).
 
 ## Local development without Docker
 
