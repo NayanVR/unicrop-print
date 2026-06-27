@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PrintStation;
 use App\Models\Setting;
 use App\Models\Size;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +16,16 @@ class SettingsController extends Controller
         return view('settings.index', [
             'sizes' => Size::orderBy('name')->get(),
             'cuttingRate' => (float) Setting::get('cutting_rate', 0),
+            'stations' => PrintStation::orderBy('name')->get(),
         ]);
+    }
+
+    public function setDefaultStation(PrintStation $station): RedirectResponse
+    {
+        PrintStation::query()->update(['is_default' => false]);
+        $station->update(['is_default' => true]);
+
+        return redirect()->route('settings.index')->with('status', 'Default print station updated.');
     }
 
     public function storeSize(Request $request): RedirectResponse

@@ -55,6 +55,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/settings/sizes/{size}', [SettingsController::class, 'destroySize'])->name('settings.sizes.destroy');
         Route::patch('/settings/sizes/{size}/default', [SettingsController::class, 'setDefaultSize'])->name('settings.sizes.default');
         Route::patch('/settings/cutting-rate', [SettingsController::class, 'updateCuttingRate'])->name('settings.cutting-rate.update');
+        Route::patch('/settings/stations/{station}/default', [SettingsController::class, 'setDefaultStation'])->name('settings.stations.default');
     });
 
     Route::middleware('admin')->group(function () {

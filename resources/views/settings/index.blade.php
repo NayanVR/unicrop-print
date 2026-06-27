@@ -82,5 +82,29 @@
                 <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg">Update Cutting Rate</button>
             </form>
         </div>
+
+        <div class="bg-white border-t-4 border-sky-500 border border-slate-200 rounded-xl p-6 self-start">
+            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-print"></i> Default Print Station</h3>
+            <p class="text-sm text-slate-500 mb-4">Pre-selected station on the upload form.</p>
+            <ul class="space-y-2">
+                @foreach ($stations as $station)
+                    <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
+                        <div>
+                            <strong>{{ $station->name }}</strong>
+                            @if ($station->is_default)
+                                <span class="bg-sky-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">DEFAULT</span>
+                            @endif
+                        </div>
+                        @unless ($station->is_default)
+                            <form method="POST" action="{{ route('settings.stations.default', $station) }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1.5 rounded">Default</button>
+                            </form>
+                        @endunless
+                    </li>
+                @endforeach
+            </ul>
+        </div>
     </div>
 </x-app-layout>
