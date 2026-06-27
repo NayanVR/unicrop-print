@@ -38,8 +38,12 @@ class PrintStation extends Model
         return (float) ($this->stationSizes->firstWhere('size_id', $size->id)?->rate ?? $size->rate);
     }
 
-    public function rateForCuttingType(CuttingType $type): float
+    public function rateForCuttingType(?CuttingType $type): float
     {
+        if (! $type) {
+            return 0.0;
+        }
+
         return (float) ($this->stationCuttingTypes->firstWhere('cutting_type_id', $type->id)?->rate ?? 0);
     }
 }
