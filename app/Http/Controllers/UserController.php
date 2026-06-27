@@ -12,13 +12,29 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim((string) $request->query('search', ''));
+        $sort = $request->query('sort', 'name') === 'created_at' ? 'created_at' : 'name';
+        $direction = $request->query('direction', 'asc') === 'desc' ? 'desc' : 'asc';
+
+        $query = User::with('printStations');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
         return view('users.index', [
-            'users' => User::with('printStations')->orderBy('name')->get(),
+            'users' => $query->orderBy($sort, $direction)->get(),
             'permissions' => Permission::ALL,
             'stations' => PrintStation::orderBy('name')->get(),
             'pendingResets' => PasswordResetRequest::with('user')->where('status', 'pending')->latest()->get(),
+            'search' => $search,
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 

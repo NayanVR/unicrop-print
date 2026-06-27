@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\URL;
 
 #[Fillable([
-    'uploaded_by', 'print_station_id', 'note', 'file_path', 'file_name', 'size_id', 'rate', 'sheets',
-    'print_total', 'cutting_jobs', 'cutting_rate', 'cutting_total', 'total_amount',
-    'status', 'printed_at', 'cut_at',
+    'uploaded_by', 'print_station_id', 'note', 'file_path', 'file_name', 'file_size', 'mime_type',
+    'size_id', 'rate', 'sheets', 'print_total', 'cutting_jobs', 'cutting_rate', 'cutting_total',
+    'total_amount', 'status', 'printed_at', 'cut_at',
 ])]
 class PrintJob extends Model
 {
@@ -57,5 +57,23 @@ class PrintJob extends Model
     public function publicShareUrl(): ?string
     {
         return $this->file_path ? URL::signedRoute('jobs.public-file', ['printJob' => $this]) : null;
+    }
+
+    public function formattedFileSize(): ?string
+    {
+        if ($this->file_size === null) {
+            return null;
+        }
+
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $size = (float) $this->file_size;
+
+        foreach ($units as $unit) {
+            if ($size < 1024 || $unit === 'GB') {
+                return round($size, $size < 10 && $unit !== 'B' ? 1 : 0).' '.$unit;
+            }
+
+            $size /= 1024;
+        }
     }
 }

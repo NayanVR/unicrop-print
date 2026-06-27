@@ -6,17 +6,46 @@
         <p class="text-slate-500 text-sm mt-1">Process pending print jobs. Once done, they will be sent to the Cutting Station.</p>
     </div>
 
+    <form method="GET" action="{{ route('printer.index') }}" class="flex flex-wrap gap-4 items-center bg-slate-100 p-4 rounded-lg mb-6">
+        <label class="font-bold text-sm">Filter By:</label>
+        <select name="station_id" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
+            <option value="all" @selected($stationId === 'all')>All Stations</option>
+            @foreach ($stations as $station)
+                <option value="{{ $station->id }}" @selected($stationId === (string) $station->id)>{{ $station->name }}</option>
+            @endforeach
+        </select>
+        <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file name..." class="rounded border-slate-300 px-3 py-2 text-sm flex-1 min-w-[200px]">
+        <input type="hidden" name="sort" value="{{ $sort }}">
+        <input type="hidden" name="direction" value="{{ $direction }}">
+        <button type="submit" class="bg-slate-800 text-white text-sm px-4 py-2 rounded">Apply</button>
+        @if ($stationId !== 'all' || $search !== '')
+            <a href="{{ route('printer.index') }}" class="text-xs text-slate-500 underline">Reset filters</a>
+        @endif
+    </form>
+
+    @php
+        $sortLink = function (string $column, string $label) use ($sort, $direction) {
+            $newDirection = ($sort === $column && $direction === 'asc') ? 'desc' : 'asc';
+            $url = request()->fullUrlWithQuery(['sort' => $column, 'direction' => $newDirection]);
+            $icon = $sort === $column
+                ? ($direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down')
+                : 'fa-sort text-slate-300';
+
+            return '<a href="'.$url.'" class="inline-flex items-center gap-1 hover:text-slate-800">'.$label.' <i class="fa-solid '.$icon.' text-[10px]"></i></a>';
+        };
+    @endphp
+
     <div class="bg-white border border-slate-200 rounded-xl p-6">
         <div class="overflow-x-auto rounded-lg border border-slate-200">
             <table class="w-full text-sm text-left">
                 <thead class="bg-slate-50 text-slate-500">
                     <tr>
-                        <th class="px-4 py-3 font-semibold">Job ID</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('id', 'Job ID') !!}</th>
                         <th class="px-4 py-3 font-semibold">Station</th>
                         <th class="px-4 py-3 font-semibold">File & Note</th>
-                        <th class="px-4 py-3 font-semibold">Upload Time</th>
-                        <th class="px-4 py-3 font-semibold">Size & Rate</th>
-                        <th class="px-4 py-3 font-semibold">Req. Sheets</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('created_at', 'Upload Time') !!}</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('rate', 'Size & Rate') !!}</th>
+                        <th class="px-4 py-3 font-semibold">{!! $sortLink('sheets', 'Req. Sheets') !!}</th>
                         <th class="px-4 py-3 font-semibold">Action</th>
                     </tr>
                 </thead>
@@ -30,6 +59,12 @@
                             <td class="px-4 py-3">
                                 <strong>Note: {{ $job->note }}</strong><br>
                                 <span class="text-xs text-slate-500">File: {{ $job->file_name }}</span><br>
+                                <span class="text-xs text-slate-400">
+                                    {{ $job->formattedFileSize() ?? 'Unknown size' }}
+                                    @if ($job->mime_type)
+                                        &middot; {{ $job->mime_type }}
+                                    @endif
+                                </span><br>
                                 @if ($job->fileUrl())
                                     <div class="flex flex-wrap gap-1 mt-1" x-data="{ copied: false }">
                                         <a href="{{ $job->fileUrl() }}" target="_blank" class="inline-flex items-center gap-1 bg-purple-500 text-white text-xs px-3 py-1 rounded">
@@ -78,6 +113,10 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-4">
+            {{ $jobs->links() }}
         </div>
     </div>
 </x-app-layout>

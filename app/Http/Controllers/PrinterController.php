@@ -3,15 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\PrintJob;
+use App\Models\PrintStation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PrinterController extends Controller
 {
+    private const SORTABLE_COLUMNS = ['id', 'created_at', 'sheets', 'rate'];
+
     public function index(Request $request): View
     {
         $user = $request->user();
+
+        $search = trim((string) $request->query('search', ''));
+        $stationId = $request->query('station_id', 'all');
+        $sort = $request->query('sort', 'created_at');
+        $direction = $request->query('direction', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        if (! in_array($sort, self::SORTABLE_COLUMNS, true)) {
+            $sort = 'created_at';
+        }
 
         $query = PrintJob::with(['size', 'printStation'])->where('status', 'pending');
 
@@ -19,9 +31,25 @@ class PrinterController extends Controller
             $query->whereIn('print_station_id', $user->printStations()->pluck('print_stations.id'));
         }
 
+        if ($stationId !== 'all') {
+            $query->where('print_station_id', $stationId);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('note', 'like', "%{$search}%")
+                    ->orWhere('file_name', 'like', "%{$search}%");
+            });
+        }
+
         return view('printer.index', [
-            'jobs' => $query->latest()->get(),
+            'jobs' => $query->orderBy($sort, $direction)->paginate(15)->withQueryString(),
             'canPrint' => $user->isAdmin() || $user->can_print,
+            'stations' => PrintStation::orderBy('name')->get(),
+            'search' => $search,
+            'stationId' => $stationId,
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 
