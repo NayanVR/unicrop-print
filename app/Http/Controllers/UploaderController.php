@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PrintJob;
 use App\Models\PrintStation;
+use App\Models\PrintStationSize;
 use App\Models\Size;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class UploaderController extends Controller
         return view('uploader.create', [
             'sizes' => Size::orderBy('name')->get(),
             'stations' => PrintStation::orderBy('name')->get(),
+            'stationRates' => PrintStationSize::all()->groupBy('print_station_id'),
         ]);
     }
 
@@ -32,6 +34,8 @@ class UploaderController extends Controller
         ]);
 
         $size = Size::findOrFail($validated['size_id']);
+        $station = PrintStation::findOrFail($validated['print_station_id']);
+        $rate = $station->rateForSize($size);
         $file = $request->file('design_file');
         $fileSize = $file->getSize();
         $mimeType = $file->getClientMimeType();
@@ -53,7 +57,7 @@ class UploaderController extends Controller
             'file_size' => $fileSize,
             'mime_type' => $mimeType,
             'size_id' => $size->id,
-            'rate' => $size->rate,
+            'rate' => $rate,
             'sheets' => $validated['sheets'],
             'status' => 'pending',
         ]);

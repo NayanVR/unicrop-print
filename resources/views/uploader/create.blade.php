@@ -5,7 +5,8 @@
 
     <div class="bg-white border border-slate-200 rounded-xl p-6 max-w-xl">
         <form method="POST" action="{{ route('uploader.store') }}" enctype="multipart/form-data" x-data="{
-            sizes: {{ $sizes->mapWithKeys(fn ($s) => [$s->id => (float) $s->rate])->toJson() }},
+            rates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->size_id => (float) $r->rate])])->toJson() }},
+            stationId: '{{ $stations->firstWhere('is_default', true)?->id ?? $stations->first()?->id }}',
             sizeId: '{{ $sizes->firstWhere('is_default', true)?->id ?? $sizes->first()?->id }}',
         }">
             @csrf
@@ -26,7 +27,7 @@
 
             <div class="mb-5">
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Print Station <span class="text-red-500">*</span></label>
-                <select name="print_station_id" required class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                <select name="print_station_id" x-model="stationId" required class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                     @foreach ($stations as $station)
                         <option value="{{ $station->id }}" @selected($station->is_default)>{{ $station->name }}</option>
                     @endforeach
@@ -49,7 +50,7 @@
             </div>
 
             <div class="mb-5 text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
-                <i class="fa-solid fa-tags"></i> Size Rate: <span x-text="sizes[sizeId]"></span> Rs / sheet
+                <i class="fa-solid fa-tags"></i> Size Rate: <span x-text="rates[stationId]?.[sizeId]"></span> Rs / sheet
             </div>
 
             <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg py-3 flex items-center justify-center gap-2">

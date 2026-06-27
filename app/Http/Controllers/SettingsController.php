@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PrintStation;
+use App\Models\PrintStationSize;
 use App\Models\Setting;
 use App\Models\Size;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,7 @@ class SettingsController extends Controller
             'sizes' => Size::orderBy('name')->get(),
             'cuttingRate' => (float) Setting::get('cutting_rate', 0),
             'stations' => PrintStation::orderBy('name')->get(),
+            'stationRates' => PrintStationSize::all()->groupBy('print_station_id'),
         ]);
     }
 
@@ -38,6 +40,14 @@ class SettingsController extends Controller
 
         if (PrintStation::count() === 1) {
             $station->update(['is_default' => true]);
+        }
+
+        foreach (Size::all() as $size) {
+            PrintStationSize::create([
+                'print_station_id' => $station->id,
+                'size_id' => $size->id,
+                'rate' => $size->rate,
+            ]);
         }
 
         return redirect()->route('settings.index')->with('status', 'Print station added.');
@@ -70,6 +80,14 @@ class SettingsController extends Controller
 
         if (Size::count() === 1) {
             $size->update(['is_default' => true]);
+        }
+
+        foreach (PrintStation::all() as $station) {
+            PrintStationSize::create([
+                'print_station_id' => $station->id,
+                'size_id' => $size->id,
+                'rate' => $size->rate,
+            ]);
         }
 
         return redirect()->route('settings.index')->with('status', 'Size added.');
@@ -109,6 +127,25 @@ class SettingsController extends Controller
         $size->update(['is_default' => true]);
 
         return redirect()->route('settings.index')->with('status', 'Default size updated.');
+    }
+
+    public function updateStationRates(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'rates' => ['required', 'array'],
+            'rates.*.*' => ['required', 'numeric', 'min:0.01'],
+        ]);
+
+        foreach ($validated['rates'] as $stationId => $sizeRates) {
+            foreach ($sizeRates as $sizeId => $rate) {
+                PrintStationSize::updateOrCreate(
+                    ['print_station_id' => $stationId, 'size_id' => $sizeId],
+                    ['rate' => $rate],
+                );
+            }
+        }
+
+        return redirect()->route('settings.index')->with('status', 'Print station rates updated.');
     }
 
     public function updateCuttingRate(Request $request): RedirectResponse

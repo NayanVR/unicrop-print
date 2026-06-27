@@ -127,5 +127,46 @@
                 @endforeach
             </ul>
         </div>
+
+        <div class="bg-white border-t-4 border-amber-500 border border-slate-200 rounded-xl p-6 lg:col-span-2">
+            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-table-cells"></i> Rate Per Station & Size</h3>
+            <p class="text-sm text-slate-500 mb-4">Each print station can charge a different rate for the same sheet size.</p>
+
+            <form method="POST" action="{{ route('settings.station-rates.update') }}">
+                @csrf
+                @method('PATCH')
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-500">
+                            <tr>
+                                <th class="px-4 py-3 font-semibold">Station</th>
+                                @foreach ($sizes as $size)
+                                    <th class="px-4 py-3 font-semibold">{{ $size->name }}</th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            @foreach ($stations as $station)
+                                <tr>
+                                    <td class="px-4 py-3 font-semibold whitespace-nowrap">{{ $station->name }}</td>
+                                    @foreach ($sizes as $size)
+                                        @php
+                                            $rate = ($stationRates[$station->id] ?? collect())->firstWhere('size_id', $size->id)?->rate ?? $size->rate;
+                                        @endphp
+                                        <td class="px-4 py-3">
+                                            <input type="number" step="0.01" min="0.01"
+                                                name="rates[{{ $station->id }}][{{ $size->id }}]"
+                                                value="{{ $rate }}"
+                                                class="w-24 rounded border-slate-300 px-2 py-1 text-sm">
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="mt-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-lg">Save Rates</button>
+            </form>
+        </div>
     </div>
 </x-app-layout>
