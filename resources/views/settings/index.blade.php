@@ -72,15 +72,48 @@
         </div>
 
         <div class="bg-white border-t-4 border-purple-500 border border-slate-200 rounded-xl p-6 self-start">
-            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-scissors"></i> Global Cutting Charge</h3>
-            <p class="text-sm text-slate-500 mb-4">Set the default cost for 1 cutting job.</p>
-            <form method="POST" action="{{ route('settings.cutting-rate.update') }}">
-                @csrf
-                @method('PATCH')
-                <label class="block text-sm font-semibold mb-1">Rate Per Cut (Rs)</label>
-                <input type="number" name="cutting_rate" step="0.01" min="0" value="{{ $cuttingRate }}" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm mb-4">
-                <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg">Update Cutting Rate</button>
-            </form>
+            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-scissors"></i> Cutting Types</h3>
+            <p class="text-sm text-slate-500 mb-4">Manage cutting types. Rates are set per station below.</p>
+
+            @if (auth()->user()->isAdmin())
+                <form method="POST" action="{{ route('settings.cutting-types.store') }}" class="flex gap-3 items-end mb-4">
+                    @csrf
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold mb-1">Cutting Type Name</label>
+                        <input type="text" name="name" placeholder="e.g., Full Cut" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
+                    </div>
+                    <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg h-[42px]">Add Type</button>
+                </form>
+            @endif
+
+            <ul class="space-y-2">
+                @foreach ($cuttingTypes as $type)
+                    <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
+                        <div>
+                            <strong>{{ $type->name }}</strong>
+                            @if ($type->is_default)
+                                <span class="bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">DEFAULT</span>
+                            @endif
+                        </div>
+                        <div class="flex items-center gap-2">
+                            @unless ($type->is_default)
+                                <form method="POST" action="{{ route('settings.cutting-types.default', $type) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1.5 rounded">Default</button>
+                                </form>
+                            @endunless
+                            @if (auth()->user()->isAdmin())
+                                <form method="POST" action="{{ route('settings.cutting-types.destroy', $type) }}" onsubmit="return confirm('Delete this cutting type?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
         </div>
 
         <div class="bg-white border-t-4 border-sky-500 border border-slate-200 rounded-xl p-6 self-start">
@@ -106,8 +139,18 @@
                             @if ($station->is_default)
                                 <span class="bg-sky-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">DEFAULT</span>
                             @endif
+                            @if (! $station->requires_cutting)
+                                <span class="bg-slate-400 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">NO CUTTING</span>
+                            @endif
                         </div>
                         <div class="flex items-center gap-2">
+                            <form method="POST" action="{{ route('settings.stations.cutting', $station) }}">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="bg-slate-500 hover:bg-slate-600 text-white text-xs px-3 py-1.5 rounded">
+                                    {{ $station->requires_cutting ? 'Disable Cutting' : 'Enable Cutting' }}
+                                </button>
+                            </form>
                             @unless ($station->is_default)
                                 <form method="POST" action="{{ route('settings.stations.default', $station) }}">
                                     @csrf
@@ -166,6 +209,47 @@
                     </table>
                 </div>
                 <button type="submit" class="mt-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-lg">Save Rates</button>
+            </form>
+        </div>
+
+        <div class="bg-white border-t-4 border-purple-500 border border-slate-200 rounded-xl p-6 lg:col-span-2">
+            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-table-cells"></i> Cutting Rate Per Station & Type</h3>
+            <p class="text-sm text-slate-500 mb-4">Each print station can charge a different rate for each cutting type.</p>
+
+            <form method="POST" action="{{ route('settings.station-cutting-rates.update') }}">
+                @csrf
+                @method('PATCH')
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-500">
+                            <tr>
+                                <th class="px-4 py-3 font-semibold">Station</th>
+                                @foreach ($cuttingTypes as $type)
+                                    <th class="px-4 py-3 font-semibold">{{ $type->name }}</th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            @foreach ($stations as $station)
+                                <tr>
+                                    <td class="px-4 py-3 font-semibold whitespace-nowrap">{{ $station->name }}</td>
+                                    @foreach ($cuttingTypes as $type)
+                                        @php
+                                            $rate = ($stationCuttingRates[$station->id] ?? collect())->firstWhere('cutting_type_id', $type->id)?->rate ?? 0;
+                                        @endphp
+                                        <td class="px-4 py-3">
+                                            <input type="number" step="0.01" min="0"
+                                                name="cutting_rates[{{ $station->id }}][{{ $type->id }}]"
+                                                value="{{ $rate }}"
+                                                class="w-24 rounded border-slate-300 px-2 py-1 text-sm">
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="mt-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg">Save Cutting Rates</button>
             </form>
         </div>
     </div>

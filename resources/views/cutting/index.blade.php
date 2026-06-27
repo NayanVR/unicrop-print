@@ -37,7 +37,7 @@
                         <th class="px-4 py-3 font-semibold">{!! $sortLink('id', 'Job ID') !!}</th>
                         <th class="px-4 py-3 font-semibold">File & Details</th>
                         <th class="px-4 py-3 font-semibold">{!! $sortLink('sheets', 'Sheets Printed') !!}</th>
-                        <th class="px-4 py-3 font-semibold">Cutting Rate</th>
+                        <th class="px-4 py-3 font-semibold">Cutting Type & Rate</th>
                         <th class="px-4 py-3 font-semibold">Cutting Jobs</th>
                         <th class="px-4 py-3 font-semibold">Action</th>
                     </tr>
@@ -61,7 +61,8 @@
                                 <span class="text-xs text-slate-500">Printed At: {{ $job->printed_at?->format('h:i A') }}</span>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="text-emerald-600 font-bold text-xs">{{ $cuttingRate }} Rs / Job</span>
+                                <span class="text-slate-600 font-semibold text-xs">{{ $job->cuttingType?->name ?? '-' }}</span><br>
+                                <span class="text-emerald-600 font-bold text-xs">{{ $job->printStation->rateForCuttingType($job->cuttingType) }} Rs / Job</span>
                             </td>
                             <td class="px-4 py-3">
                                 <input type="number" form="cut-job-{{ $job->id }}" name="cutting_jobs" value="1" min="0" class="w-20 rounded border-slate-300 px-2 py-1 text-sm">

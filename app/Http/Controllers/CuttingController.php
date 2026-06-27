@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\PrintJob;
-use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -22,7 +21,7 @@ class CuttingController extends Controller
             $sort = 'printed_at';
         }
 
-        $query = PrintJob::with('size')->where('status', 'cutting');
+        $query = PrintJob::with(['size', 'printStation', 'cuttingType'])->where('status', 'cutting');
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -33,7 +32,6 @@ class CuttingController extends Controller
 
         return view('cutting.index', [
             'jobs' => $query->orderBy($sort, $direction)->paginate(15)->withQueryString(),
-            'cuttingRate' => (float) Setting::get('cutting_rate', 0),
             'search' => $search,
             'sort' => $sort,
             'direction' => $direction,
@@ -46,7 +44,7 @@ class CuttingController extends Controller
             'cutting_jobs' => ['required', 'integer', 'min:0'],
         ]);
 
-        $cuttingRate = (float) Setting::get('cutting_rate', 0);
+        $cuttingRate = $printJob->printStation->rateForCuttingType($printJob->cuttingType);
         $cuttingTotal = $validated['cutting_jobs'] * $cuttingRate;
 
         $printJob->update([

@@ -6,8 +6,12 @@
     <div class="bg-white border border-slate-200 rounded-xl p-6 max-w-xl">
         <form method="POST" action="{{ route('uploader.store') }}" enctype="multipart/form-data" x-data="{
             rates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->size_id => (float) $r->rate])])->toJson() }},
+            cuttingRates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationCuttingRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->cutting_type_id => (float) $r->rate])])->toJson() }},
+            stationsRequireCutting: {{ $stations->mapWithKeys(fn ($st) => [$st->id => (bool) $st->requires_cutting])->toJson() }},
             stationId: '{{ $stations->firstWhere('is_default', true)?->id ?? $stations->first()?->id }}',
             sizeId: '{{ $sizes->firstWhere('is_default', true)?->id ?? $sizes->first()?->id }}',
+            needsCutting: false,
+            cuttingTypeId: '{{ $cuttingTypes->firstWhere('is_default', true)?->id ?? $cuttingTypes->first()?->id }}',
         }">
             @csrf
 
@@ -51,6 +55,25 @@
 
             <div class="mb-5 text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
                 <i class="fa-solid fa-tags"></i> Size Rate: <span x-text="rates[stationId]?.[sizeId]"></span> Rs / sheet
+            </div>
+
+            <div class="mb-5" x-show="stationsRequireCutting[stationId]">
+                <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+                    <input type="checkbox" name="needs_cutting" value="1" x-model="needsCutting">
+                    Needs Cutting?
+                </label>
+
+                <div x-show="needsCutting">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Cutting Type</label>
+                    <select name="cutting_type_id" x-model="cuttingTypeId" class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                        @foreach ($cuttingTypes as $type)
+                            <option value="{{ $type->id }}" @selected($type->is_default)>{{ $type->name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="mt-3 text-sm font-bold text-purple-700 bg-purple-50 border border-purple-200 rounded-lg px-4 py-3">
+                        <i class="fa-solid fa-scissors"></i> Cutting Rate: <span x-text="cuttingRates[stationId]?.[cuttingTypeId]"></span> Rs / cut
+                    </div>
+                </div>
             </div>
 
             <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg py-3 flex items-center justify-center gap-2">

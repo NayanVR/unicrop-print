@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PrintStation extends Model
 {
-    protected $fillable = ['name', 'is_default'];
+    protected $fillable = ['name', 'is_default', 'requires_cutting'];
 
     protected function casts(): array
     {
         return [
             'is_default' => 'boolean',
+            'requires_cutting' => 'boolean',
         ];
     }
 
@@ -27,8 +28,18 @@ class PrintStation extends Model
         return $this->hasMany(PrintStationSize::class);
     }
 
+    public function stationCuttingTypes(): HasMany
+    {
+        return $this->hasMany(PrintStationCuttingType::class);
+    }
+
     public function rateForSize(Size $size): float
     {
         return (float) ($this->stationSizes->firstWhere('size_id', $size->id)?->rate ?? $size->rate);
+    }
+
+    public function rateForCuttingType(CuttingType $type): float
+    {
+        return (float) ($this->stationCuttingTypes->firstWhere('cutting_type_id', $type->id)?->rate ?? 0);
     }
 }

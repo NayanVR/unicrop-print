@@ -64,15 +64,28 @@ class PrinterController extends Controller
         ]);
 
         $printTotal = $validated['sheets'] * $printJob->rate;
+        $needsCutting = $printJob->needs_cutting && $printJob->printStation->requires_cutting;
+
+        if ($needsCutting) {
+            $printJob->update([
+                'sheets' => $validated['sheets'],
+                'print_total' => $printTotal,
+                'total_amount' => $printTotal,
+                'status' => 'cutting',
+                'printed_at' => now(),
+            ]);
+
+            return redirect()->route('printer.index')->with('status', 'Print marked done! Job sent to Cutting Station.');
+        }
 
         $printJob->update([
             'sheets' => $validated['sheets'],
             'print_total' => $printTotal,
             'total_amount' => $printTotal,
-            'status' => 'cutting',
+            'status' => 'completed',
             'printed_at' => now(),
         ]);
 
-        return redirect()->route('printer.index')->with('status', 'Print marked done! Job sent to Cutting Station.');
+        return redirect()->route('printer.index')->with('status', "Print marked done! Final bill: {$printJob->total_amount} Rs.");
     }
 }

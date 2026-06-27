@@ -56,7 +56,10 @@ Route::middleware('auth')->group(function () {
         Route::patch('/settings/sizes/{size}/default', [SettingsController::class, 'setDefaultSize'])->name('settings.sizes.default');
         Route::patch('/settings/cutting-rate', [SettingsController::class, 'updateCuttingRate'])->name('settings.cutting-rate.update');
         Route::patch('/settings/stations/{station}/default', [SettingsController::class, 'setDefaultStation'])->name('settings.stations.default');
+        Route::patch('/settings/stations/{station}/cutting', [SettingsController::class, 'toggleStationCutting'])->name('settings.stations.cutting');
         Route::patch('/settings/station-rates', [SettingsController::class, 'updateStationRates'])->name('settings.station-rates.update');
+        Route::patch('/settings/cutting-types/{cuttingType}/default', [SettingsController::class, 'setDefaultCuttingType'])->name('settings.cutting-types.default');
+        Route::patch('/settings/station-cutting-rates', [SettingsController::class, 'updateStationCuttingRates'])->name('settings.station-cutting-rates.update');
     });
 
     Route::middleware('admin')->group(function () {
@@ -68,6 +71,9 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/settings/stations', [SettingsController::class, 'storeStation'])->name('settings.stations.store');
         Route::delete('/settings/stations/{station}', [SettingsController::class, 'destroyStation'])->name('settings.stations.destroy');
+
+        Route::post('/settings/cutting-types', [SettingsController::class, 'storeCuttingType'])->name('settings.cutting-types.store');
+        Route::delete('/settings/cutting-types/{cuttingType}', [SettingsController::class, 'destroyCuttingType'])->name('settings.cutting-types.destroy');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

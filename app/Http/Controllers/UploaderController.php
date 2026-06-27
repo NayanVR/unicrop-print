@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CuttingType;
 use App\Models\PrintJob;
 use App\Models\PrintStation;
+use App\Models\PrintStationCuttingType;
 use App\Models\PrintStationSize;
 use App\Models\Size;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +22,8 @@ class UploaderController extends Controller
             'sizes' => Size::orderBy('name')->get(),
             'stations' => PrintStation::orderBy('name')->get(),
             'stationRates' => PrintStationSize::all()->groupBy('print_station_id'),
+            'cuttingTypes' => CuttingType::orderBy('name')->get(),
+            'stationCuttingRates' => PrintStationCuttingType::all()->groupBy('print_station_id'),
         ]);
     }
 
@@ -31,11 +35,15 @@ class UploaderController extends Controller
             'size_id' => ['required', 'exists:sizes,id'],
             'print_station_id' => ['required', 'exists:print_stations,id'],
             'sheets' => ['required', 'integer', 'min:1'],
+            'needs_cutting' => ['nullable', 'boolean'],
+            'cutting_type_id' => ['nullable', 'required_if:needs_cutting,1', 'exists:cutting_types,id'],
         ]);
 
         $size = Size::findOrFail($validated['size_id']);
         $station = PrintStation::findOrFail($validated['print_station_id']);
         $rate = $station->rateForSize($size);
+        $needsCutting = $station->requires_cutting && $request->boolean('needs_cutting');
+        $cuttingTypeId = $needsCutting ? $validated['cutting_type_id'] : null;
         $file = $request->file('design_file');
         $fileSize = $file->getSize();
         $mimeType = $file->getClientMimeType();
@@ -59,6 +67,8 @@ class UploaderController extends Controller
             'size_id' => $size->id,
             'rate' => $rate,
             'sheets' => $validated['sheets'],
+            'needs_cutting' => $needsCutting,
+            'cutting_type_id' => $cuttingTypeId,
             'status' => 'pending',
         ]);
 
