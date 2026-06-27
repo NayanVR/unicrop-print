@@ -23,11 +23,17 @@
                 <option value="{{ $case->value }}" @selected($status === $case->value)>{{ ucfirst($case->value) }}</option>
             @endforeach
         </select>
+        <select name="station_id" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
+            <option value="all" @selected($stationId === 'all')>All Stations</option>
+            @foreach ($stations as $station)
+                <option value="{{ $station->id }}" @selected($stationId === (string) $station->id)>{{ $station->name }}</option>
+            @endforeach
+        </select>
         <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file name..." class="rounded border-slate-300 px-3 py-2 text-sm flex-1 min-w-[200px]">
         <input type="hidden" name="sort" value="{{ $sort }}">
         <input type="hidden" name="direction" value="{{ $direction }}">
         <button type="submit" class="bg-slate-800 text-white text-sm px-4 py-2 rounded">Apply</button>
-        @if ($status !== 'all' || $search !== '' || $month !== 'all' || $year !== (string) now()->year)
+        @if ($status !== 'all' || $search !== '' || $month !== 'all' || $year !== (string) now()->year || $stationId !== 'all')
             <a href="{{ route('records.index') }}" class="text-xs text-slate-500 underline">Reset filters</a>
         @endif
     </form>
@@ -61,6 +67,7 @@
                 <thead class="bg-slate-50 text-slate-500">
                     <tr>
                         <th class="px-4 py-3 font-semibold">{!! $sortLink('id', 'Job ID') !!}</th>
+                        <th class="px-4 py-3 font-semibold">Station</th>
                         <th class="px-4 py-3 font-semibold">File Options</th>
                         <th class="px-4 py-3 font-semibold">Print Details</th>
                         <th class="px-4 py-3 font-semibold">Cut Details</th>
@@ -76,6 +83,9 @@
                     @forelse ($jobs as $job)
                         <tr>
                             <td class="px-4 py-3">#{{ $job->id }}</td>
+                            <td class="px-4 py-3">
+                                <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded">{{ $job->printStation?->name ?? '-' }}</span>
+                            </td>
                             <td class="px-4 py-3">
                                 @if ($job->fileUrl())
                                     <a href="{{ $job->fileUrl() }}" target="_blank" class="inline-flex items-center gap-1 mb-1 bg-purple-500 text-white text-xs px-3 py-1 rounded">
@@ -123,7 +133,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="10" class="px-4 py-6 text-center text-slate-500">No records found for selected filter.</td></tr>
+                        <tr><td colspan="11" class="px-4 py-6 text-center text-slate-500">No records found for selected filter.</td></tr>
                     @endforelse
                 </tbody>
             </table>

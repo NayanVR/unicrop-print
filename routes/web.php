@@ -64,6 +64,9 @@ Route::middleware('auth')->group(function () {
         Route::patch('/users/{user}/access', [UserController::class, 'updateAccess'])->name('users.access.update');
         Route::patch('/users/{user}/password', [UserController::class, 'resetPassword'])->name('users.password.update');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        Route::post('/settings/stations', [SettingsController::class, 'storeStation'])->name('settings.stations.store');
+        Route::delete('/settings/stations/{station}', [SettingsController::class, 'destroyStation'])->name('settings.stations.destroy');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

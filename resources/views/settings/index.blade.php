@@ -84,8 +84,20 @@
         </div>
 
         <div class="bg-white border-t-4 border-sky-500 border border-slate-200 rounded-xl p-6 self-start">
-            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-print"></i> Default Print Station</h3>
-            <p class="text-sm text-slate-500 mb-4">Pre-selected station on the upload form.</p>
+            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-print"></i> Print Stations</h3>
+            <p class="text-sm text-slate-500 mb-4">Manage stations and the default selected on the upload form.</p>
+
+            @if (auth()->user()->isAdmin())
+                <form method="POST" action="{{ route('settings.stations.store') }}" class="flex gap-3 items-end mb-4">
+                    @csrf
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold mb-1">Station Name</label>
+                        <input type="text" name="name" placeholder="e.g., Pranjal" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
+                    </div>
+                    <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold px-4 py-2 rounded-lg h-[42px]">Add Station</button>
+                </form>
+            @endif
+
             <ul class="space-y-2">
                 @foreach ($stations as $station)
                     <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
@@ -95,13 +107,22 @@
                                 <span class="bg-sky-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">DEFAULT</span>
                             @endif
                         </div>
-                        @unless ($station->is_default)
-                            <form method="POST" action="{{ route('settings.stations.default', $station) }}">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1.5 rounded">Default</button>
-                            </form>
-                        @endunless
+                        <div class="flex items-center gap-2">
+                            @unless ($station->is_default)
+                                <form method="POST" action="{{ route('settings.stations.default', $station) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1.5 rounded">Default</button>
+                                </form>
+                            @endunless
+                            @if (auth()->user()->isAdmin())
+                                <form method="POST" action="{{ route('settings.stations.destroy', $station) }}" onsubmit="return confirm('Delete this print station?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            @endif
+                        </div>
                     </li>
                 @endforeach
             </ul>

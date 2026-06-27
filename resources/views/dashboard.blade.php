@@ -30,4 +30,35 @@
             <div class="text-2xl font-extrabold text-[#1b5e2e] mt-2">{{ number_format($revenue, 2) }} Rs</div>
         </div>
     </div>
+
+    <div class="mt-8">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">By Print Station</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            @forelse ($stationStats as $stat)
+                <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                    <p class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-print text-purple-500"></i> {{ $stat['station']->name }}</p>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <p class="text-slate-500">Pending Prints</p>
+                            <p class="font-bold text-blue-600">{{ $stat['pending_prints'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500">Pending Cuts</p>
+                            <p class="font-bold text-purple-600">{{ $stat['pending_cuts'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500">Completed</p>
+                            <p class="font-bold text-[#1b5e2e]">{{ $stat['completed'] }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500">Revenue</p>
+                            <p class="font-bold text-[#1b5e2e]">{{ number_format($stat['revenue'], 2) }} Rs</p>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <p class="text-slate-500 text-sm">No print stations assigned to your account.</p>
+            @endforelse
+        </div>
+    </div>
 </x-app-layout>

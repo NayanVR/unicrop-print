@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PrintJob;
+use App\Models\PrintStation;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -14,10 +15,13 @@ class RecordController extends Controller
 
     public function index(Request $request): View
     {
+        $user = $request->user();
+
         $month = $request->query('month', 'all');
         $year = $request->query('year', (string) now()->year);
         $status = $request->query('status', 'all');
         $search = trim((string) $request->query('search', ''));
+        $stationId = $request->query('station_id', 'all');
         $sort = $request->query('sort', 'updated_at');
         $direction = $request->query('direction', 'desc') === 'asc' ? 'asc' : 'desc';
 
@@ -25,7 +29,15 @@ class RecordController extends Controller
             $sort = 'updated_at';
         }
 
-        $query = PrintJob::with('size');
+        $query = PrintJob::with(['size', 'printStation']);
+
+        if (! $user->isAdmin()) {
+            $query->whereIn('print_station_id', $user->printStations()->pluck('print_stations.id'));
+        }
+
+        if ($stationId !== 'all') {
+            $query->where('print_station_id', $stationId);
+        }
 
         if ($month !== 'all') {
             $query->whereMonth('cut_at', $month);
@@ -62,6 +74,10 @@ class RecordController extends Controller
             'search' => $search,
             'sort' => $sort,
             'direction' => $direction,
+            'stationId' => $stationId,
+            'stations' => $user->isAdmin()
+                ? PrintStation::orderBy('name')->get()
+                : $user->printStations()->orderBy('name')->get(),
         ]);
     }
 }

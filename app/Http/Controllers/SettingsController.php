@@ -28,6 +28,37 @@ class SettingsController extends Controller
         return redirect()->route('settings.index')->with('status', 'Default print station updated.');
     }
 
+    public function storeStation(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:print_stations,name'],
+        ]);
+
+        $station = PrintStation::create($validated);
+
+        if (PrintStation::count() === 1) {
+            $station->update(['is_default' => true]);
+        }
+
+        return redirect()->route('settings.index')->with('status', 'Print station added.');
+    }
+
+    public function destroyStation(PrintStation $station): RedirectResponse
+    {
+        if (PrintStation::count() <= 1) {
+            return redirect()->route('settings.index')->with('error', 'At least one print station is required.');
+        }
+
+        $wasDefault = $station->is_default;
+        $station->delete();
+
+        if ($wasDefault) {
+            PrintStation::first()?->update(['is_default' => true]);
+        }
+
+        return redirect()->route('settings.index')->with('status', 'Print station deleted.');
+    }
+
     public function storeSize(Request $request): RedirectResponse
     {
         $validated = $request->validate([
