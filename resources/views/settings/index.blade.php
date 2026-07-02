@@ -3,7 +3,7 @@
 
     <h2 class="text-2xl font-bold text-slate-900 mb-6">System Settings</h2>
 
-    @php $isFullAdmin = auth()->user()->isAdmin() || auth()->user()->hasPermission('system_settings'); @endphp
+    @php $isFullAdmin = auth()->user()->isAdmin(); @endphp
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         @if ($isFullAdmin)

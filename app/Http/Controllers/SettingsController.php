@@ -17,7 +17,7 @@ class SettingsController extends Controller
     public function index(): View
     {
         $user = auth()->user();
-        $stations = $user->isAdmin() || $user->hasPermission('system_settings')
+        $stations = $user->isAdmin()
             ? PrintStation::orderBy('name')->get()
             : $user->printStations()->orderBy('name')->get();
 
@@ -161,7 +161,7 @@ class SettingsController extends Controller
         ]);
 
         $user = auth()->user();
-        $allowedIds = $user->isAdmin() || $user->hasPermission('system_settings')
+        $allowedIds = $user->isAdmin()
             ? null
             : $user->printStations()->pluck('print_stations.id')->toArray();
 
@@ -246,7 +246,7 @@ class SettingsController extends Controller
         ]);
 
         $user = auth()->user();
-        $allowedIds = $user->isAdmin() || $user->hasPermission('system_settings')
+        $allowedIds = $user->isAdmin()
             ? null
             : $user->printStations()->pluck('print_stations.id')->toArray();
 
