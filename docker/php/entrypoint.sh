@@ -2,5 +2,6 @@
 set -e
 
 php artisan migrate --force
+php artisan optimize
 
 exec "$@"

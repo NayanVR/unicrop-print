@@ -76,7 +76,7 @@
                     <!-- Remember Me / Forgot -->
                     <div class="flex items-center justify-between">
                         <label for="remember_me" class="inline-flex items-center cursor-pointer">
-                            <input id="remember_me" type="checkbox" name="remember"
+                            <input id="remember_me" type="checkbox" name="remember" checked
                                 class="rounded border-gray-300 text-[#3f9b3f] focus:ring-[#3f9b3f]">
                             <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
                         </label>
