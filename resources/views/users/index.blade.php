@@ -31,10 +31,16 @@
                 <input type="email" name="email" value="{{ old('email') }}" required
                     class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30">
             </div>
-            <div>
+            <div x-data="{ show: false }">
                 <label class="block text-sm font-semibold mb-1 text-slate-700">Password</label>
-                <input type="password" name="password" required
-                    class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30">
+                <div class="relative">
+                    <input :type="show ? 'text' : 'password'" name="password" required
+                        class="w-full rounded-lg border-slate-300 px-3 py-2 pr-10 text-sm focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30">
+                    <button type="button" @click="show = !show"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <i :class="show ? 'fa-eye-slash' : 'fa-eye'" class="fa-solid text-sm"></i>
+                    </button>
+                </div>
             </div>
             <div class="border-t border-slate-100 pt-4">
                 <label class="flex items-center gap-2 mb-3 font-semibold text-sm text-slate-700">
@@ -251,8 +257,14 @@
                         @csrf
                         @method('PATCH')
                         <p class="text-xs text-slate-500">Setting new password for <strong>{{ $user->name }}</strong></p>
-                        <input type="password" name="password" required minlength="8" placeholder="New password (min 8 chars)"
-                            class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-[#3f9b3f] focus:ring-[#3f9b3f]/30">
+                        <div x-data="{ show: false }" class="relative">
+                            <input :type="show ? 'text' : 'password'" name="password" required minlength="8" placeholder="New password (min 8 chars)"
+                                class="w-full rounded-lg border-slate-300 px-3 py-2 pr-10 text-sm focus:border-[#3f9b3f] focus:ring-[#3f9b3f]/30">
+                            <button type="button" @click="show = !show"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                <i :class="show ? 'fa-eye-slash' : 'fa-eye'" class="fa-solid text-sm"></i>
+                            </button>
+                        </div>
                         <div class="flex justify-end gap-2">
                             <button type="button" onclick="document.getElementById('set-password-{{ $user->id }}').close()"
                                 class="px-3 py-2 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Cancel</button>
