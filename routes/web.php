@@ -48,8 +48,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/records', [RecordController::class, 'index'])->name('records.index');
     });
 
-    Route::middleware('permission:'.Permission::SYSTEM_SETTINGS)->group(function () {
+    // Settings view + rate editing: admin OR print_station users (print_station users see only their own stations)
+    Route::middleware('permission:'.Permission::SYSTEM_SETTINGS.','.Permission::PRINT_STATION)->group(function () {
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::patch('/settings/station-rates', [SettingsController::class, 'updateStationRates'])->name('settings.station-rates.update');
+        Route::patch('/settings/station-cutting-rates', [SettingsController::class, 'updateStationCuttingRates'])->name('settings.station-cutting-rates.update');
+    });
+
+    // Full settings management: system_settings permission (admin or granted)
+    Route::middleware('permission:'.Permission::SYSTEM_SETTINGS)->group(function () {
         Route::post('/settings/sizes', [SettingsController::class, 'storeSize'])->name('settings.sizes.store');
         Route::patch('/settings/sizes/{size}', [SettingsController::class, 'updateSize'])->name('settings.sizes.update');
         Route::delete('/settings/sizes/{size}', [SettingsController::class, 'destroySize'])->name('settings.sizes.destroy');
@@ -57,9 +64,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/settings/cutting-rate', [SettingsController::class, 'updateCuttingRate'])->name('settings.cutting-rate.update');
         Route::patch('/settings/stations/{station}/default', [SettingsController::class, 'setDefaultStation'])->name('settings.stations.default');
         Route::patch('/settings/stations/{station}/cutting', [SettingsController::class, 'toggleStationCutting'])->name('settings.stations.cutting');
-        Route::patch('/settings/station-rates', [SettingsController::class, 'updateStationRates'])->name('settings.station-rates.update');
         Route::patch('/settings/cutting-types/{cuttingType}/default', [SettingsController::class, 'setDefaultCuttingType'])->name('settings.cutting-types.default');
-        Route::patch('/settings/station-cutting-rates', [SettingsController::class, 'updateStationCuttingRates'])->name('settings.station-cutting-rates.update');
     });
 
     Route::middleware('admin')->group(function () {

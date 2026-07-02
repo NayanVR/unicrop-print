@@ -3,7 +3,10 @@
 
     <h2 class="text-2xl font-bold text-slate-900 mb-6">System Settings</h2>
 
+    @php $isFullAdmin = auth()->user()->isAdmin() || auth()->user()->hasPermission('system_settings'); @endphp
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        @if ($isFullAdmin)
         <div class="bg-white border-t-4 border-emerald-500 border border-slate-200 rounded-xl p-6">
             <h3 class="font-semibold mb-5 flex items-center gap-2"><i class="fa-solid fa-expand"></i> Manage Print Sizes & Rates</h3>
 
@@ -116,7 +119,7 @@
             </ul>
         </div>
 
-        <div class="bg-white border-t-4 border-sky-500 border border-slate-200 rounded-xl p-6 self-start">
+        <div class="bg-white border-t-4 border-sky-500 border border-slate-200 rounded-xl p-6 self-start lg:col-span-1">
             <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-print"></i> Print Stations</h3>
             <p class="text-sm text-slate-500 mb-4">Manage stations and the default selected on the upload form.</p>
 
@@ -170,6 +173,14 @@
                 @endforeach
             </ul>
         </div>
+        @endif
+
+        @if (! $isFullAdmin)
+            <div class="bg-sky-50 border border-sky-200 text-sky-700 text-sm rounded-xl px-4 py-3 mb-2 lg:col-span-2 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info"></i>
+                You can only view and edit rates for your assigned station(s).
+            </div>
+        @endif
 
         <div class="bg-white border-t-4 border-amber-500 border border-slate-200 rounded-xl p-6 lg:col-span-2">
             <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-table-cells"></i> Rate Per Station & Size</h3>

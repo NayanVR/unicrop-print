@@ -16,10 +16,15 @@ class SettingsController extends Controller
 {
     public function index(): View
     {
+        $user = auth()->user();
+        $stations = $user->isAdmin() || $user->hasPermission('system_settings')
+            ? PrintStation::orderBy('name')->get()
+            : $user->printStations()->orderBy('name')->get();
+
         return view('settings.index', [
             'sizes' => Size::orderBy('name')->get(),
             'cuttingRate' => (float) Setting::get('cutting_rate', 0),
-            'stations' => PrintStation::orderBy('name')->get(),
+            'stations' => $stations,
             'stationRates' => PrintStationSize::all()->groupBy('print_station_id'),
             'cuttingTypes' => CuttingType::orderBy('name')->get(),
             'stationCuttingRates' => PrintStationCuttingType::all()->groupBy('print_station_id'),
@@ -155,7 +160,15 @@ class SettingsController extends Controller
             'rates.*.*' => ['required', 'numeric', 'min:0.01'],
         ]);
 
+        $user = auth()->user();
+        $allowedIds = $user->isAdmin() || $user->hasPermission('system_settings')
+            ? null
+            : $user->printStations()->pluck('print_stations.id')->toArray();
+
         foreach ($validated['rates'] as $stationId => $sizeRates) {
+            if ($allowedIds !== null && ! in_array((int) $stationId, $allowedIds)) {
+                continue;
+            }
             foreach ($sizeRates as $sizeId => $rate) {
                 PrintStationSize::updateOrCreate(
                     ['print_station_id' => $stationId, 'size_id' => $sizeId],
@@ -232,7 +245,15 @@ class SettingsController extends Controller
             'cutting_rates.*.*' => ['required', 'numeric', 'min:0'],
         ]);
 
+        $user = auth()->user();
+        $allowedIds = $user->isAdmin() || $user->hasPermission('system_settings')
+            ? null
+            : $user->printStations()->pluck('print_stations.id')->toArray();
+
         foreach ($validated['cutting_rates'] as $stationId => $typeRates) {
+            if ($allowedIds !== null && ! in_array((int) $stationId, $allowedIds)) {
+                continue;
+            }
             foreach ($typeRates as $typeId => $rate) {
                 PrintStationCuttingType::updateOrCreate(
                     ['print_station_id' => $stationId, 'cutting_type_id' => $typeId],
