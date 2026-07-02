@@ -61,12 +61,31 @@
         };
     @endphp
 
-    <div class="bg-white border border-slate-200 rounded-xl p-6">
+    <div class="bg-white border border-slate-200 rounded-xl p-6" x-data="{ previewUrl: '', previewMime: '', previewName: '', open: false }">
+
+        {{-- File preview modal --}}
+        <dialog x-bind:open="open" @click.self="open = false"
+            class="fixed inset-0 z-50 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl p-0 border-0 backdrop:bg-black/60 overflow-hidden">
+            <div class="flex items-center justify-between bg-slate-800 text-white px-5 py-3">
+                <span class="text-sm font-semibold truncate" x-text="previewName"></span>
+                <button @click="open = false" class="text-white/70 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <div class="bg-black flex items-center justify-center" style="height: calc(90vh - 52px)">
+                <template x-if="previewMime === 'application/pdf'">
+                    <iframe :src="previewUrl" class="w-full h-full border-0"></iframe>
+                </template>
+                <template x-if="previewMime !== 'application/pdf'">
+                    <img :src="previewUrl" :alt="previewName" class="max-w-full max-h-full object-contain">
+                </template>
+            </div>
+        </dialog>
+
         <div class="overflow-x-auto rounded-lg border border-slate-200">
             <table class="w-full text-sm text-left">
                 <thead class="bg-slate-50 text-slate-500">
                     <tr>
                         <th class="px-4 py-3 font-semibold">{!! $sortLink('id', 'Job ID') !!}</th>
+                        <th class="px-4 py-3 font-semibold">Preview</th>
                         <th class="px-4 py-3 font-semibold">Station</th>
                         <th class="px-4 py-3 font-semibold">File Options</th>
                         <th class="px-4 py-3 font-semibold">Print Details</th>
@@ -83,6 +102,29 @@
                     @forelse ($jobs as $job)
                         <tr>
                             <td class="px-4 py-3">#{{ $job->id }}</td>
+                            <td class="px-4 py-3">
+                                @if ($job->fileUrl())
+                                    @if (str_contains($job->mime_type ?? '', 'pdf'))
+                                        <button type="button"
+                                            @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; open = true"
+                                            class="flex items-center justify-center w-16 h-16 rounded-lg bg-red-50 border border-red-200 hover:bg-red-100 transition text-red-500 flex-col gap-1">
+                                            <i class="fa-solid fa-file-pdf text-2xl"></i>
+                                            <span class="text-[9px] font-semibold">PDF</span>
+                                        </button>
+                                    @else
+                                        <button type="button"
+                                            @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; open = true"
+                                            class="block w-16 h-16 rounded-lg border border-slate-200 overflow-hidden hover:ring-2 hover:ring-purple-400 transition">
+                                            <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                                class="w-full h-full object-cover" loading="lazy">
+                                        </button>
+                                    @endif
+                                @else
+                                    <div class="w-16 h-16 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                        <i class="fa-solid fa-image text-2xl"></i>
+                                    </div>
+                                @endif
+                            </td>
                             <td class="px-4 py-3">
                                 <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1 rounded">{{ $job->printStation?->name ?? '-' }}</span>
                             </td>
@@ -133,7 +175,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="11" class="px-4 py-6 text-center text-slate-500">No records found for selected filter.</td></tr>
+                        <tr><td colspan="12" class="px-4 py-6 text-center text-slate-500">No records found for selected filter.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -142,5 +184,6 @@
         <div class="mt-4">
             {{ $jobs->links() }}
         </div>
+    </div>
     </div>
 </x-app-layout>
