@@ -50,6 +50,7 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
+            'plain_password' => $validated['password'],
             'is_admin' => $validated['is_admin'],
             'permissions' => $validated['permissions'],
             'can_print' => $validated['can_print'],
@@ -85,7 +86,10 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8'],
         ]);
 
-        $user->update(['password' => bcrypt($validated['password'])]);
+        $user->update([
+            'password' => bcrypt($validated['password']),
+            'plain_password' => $validated['password'],
+        ]);
 
         $user->passwordResetRequests()->where('status', 'pending')->update(['status' => 'resolved']);
 

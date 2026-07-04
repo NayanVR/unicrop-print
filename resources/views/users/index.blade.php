@@ -170,10 +170,23 @@
                             <i class="fa-solid fa-sliders text-slate-400"></i>
                             <span x-text="open ? 'Close' : 'Edit Access'"></span>
                         </button>
-                        <button type="button" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 transition"
-                            onclick="document.getElementById('set-password-{{ $user->id }}').showModal()">
-                            <i class="fa-solid fa-key text-slate-400"></i> Password
-                        </button>
+                        <div class="inline-flex items-center gap-1 text-xs font-medium rounded-lg border border-slate-200 overflow-hidden"
+                            x-data="{ show: false }">
+                            <button type="button" onclick="document.getElementById('set-password-{{ $user->id }}').showModal()"
+                                class="px-3 py-1.5 hover:bg-slate-50 text-slate-600 transition border-r border-slate-200">
+                                <i class="fa-solid fa-key text-slate-400"></i> Password
+                            </button>
+                            @if ($user->plain_password)
+                                <button type="button" @click="show = !show"
+                                    class="px-2 py-1.5 hover:bg-amber-50 text-amber-600 transition flex items-center gap-1"
+                                    :title="show ? '{{ addslashes($user->plain_password) }}' : 'Current password dekho'">
+                                    <i class="fa-solid text-xs" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    <span x-show="show" class="font-mono font-bold tracking-wider">{{ $user->plain_password }}</span>
+                                </button>
+                            @else
+                                <span class="px-2 py-1.5 text-slate-300 italic text-[10px]">—</span>
+                            @endif
+                        </div>
                         <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Delete {{ $user->name }}?')">
                             @csrf
                             @method('DELETE')
