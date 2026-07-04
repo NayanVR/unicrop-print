@@ -177,12 +177,18 @@
                                 <i class="fa-solid fa-key text-slate-400"></i> Password
                             </button>
                             @if ($user->plain_password)
-                                <button type="button" @click="show = !show"
-                                    class="px-2 py-1.5 hover:bg-amber-50 text-amber-600 transition flex items-center gap-1"
-                                    :title="show ? '{{ addslashes($user->plain_password) }}' : 'Current password dekho'">
-                                    <i class="fa-solid text-xs" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                    <span x-show="show" class="font-mono font-bold tracking-wider">{{ $user->plain_password }}</span>
-                                </button>
+                                <div x-data="{ show: false, copied: false }" class="flex items-center">
+                                    <button type="button" @click="show = !show"
+                                        class="px-2 py-1.5 hover:bg-amber-50 text-amber-600 transition flex items-center gap-1">
+                                        <i class="fa-solid text-xs" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                        <span x-show="show" class="font-mono font-bold tracking-wider">{{ $user->plain_password }}</span>
+                                    </button>
+                                    <button type="button" x-show="show"
+                                        @click="navigator.clipboard.writeText('{{ addslashes($user->plain_password) }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                        class="px-2 py-1.5 hover:bg-emerald-50 text-emerald-600 transition border-l border-slate-200">
+                                        <i class="fa-solid text-xs" :class="copied ? 'fa-check' : 'fa-copy'"></i>
+                                    </button>
+                                </div>
                             @else
                                 <span class="px-2 py-1.5 text-slate-300 italic text-[10px]">—</span>
                             @endif
