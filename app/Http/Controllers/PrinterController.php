@@ -55,7 +55,8 @@ class PrinterController extends Controller
 
     public function update(Request $request, PrintJob $printJob): RedirectResponse
     {
-        if (! $request->user()->isAdmin() && ! $request->user()->can_print) {
+        $user = $request->user();
+        if (! $user->hasPermission('print_station') || (! $user->isAdmin() && ! $user->can_print)) {
             abort(403);
         }
 
