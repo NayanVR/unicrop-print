@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\URL;
 #[Fillable([
     'uploaded_by', 'print_station_id', 'note', 'file_path', 'file_name', 'file_size', 'mime_type',
     'size_id', 'rate', 'sheets', 'print_total', 'needs_cutting', 'cutting_type_id', 'cutting_jobs',
-    'cutting_rate', 'cutting_total', 'total_amount', 'status', 'printed_at', 'cut_at',
+    'cutting_rate', 'cutting_total', 'total_amount', 'status', 'printed_at', 'cut_at', 'dispatched_at',
 ])]
 class PrintJob extends Model
 {
@@ -27,6 +27,7 @@ class PrintJob extends Model
             'status' => JobStatus::class,
             'printed_at' => 'datetime',
             'cut_at' => 'datetime',
+            'dispatched_at' => 'datetime',
         ];
     }
 

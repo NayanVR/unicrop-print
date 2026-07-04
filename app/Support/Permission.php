@@ -10,6 +10,8 @@ class Permission
 
     public const CUTTING_STATION = 'cutting_station';
 
+    public const DISPATCH = 'dispatch';
+
     public const BILLING_LOGS = 'billing_logs';
 
     public const SYSTEM_SETTINGS = 'system_settings';
@@ -18,6 +20,7 @@ class Permission
         self::UPLOAD_DESIGN => 'Upload Design',
         self::PRINT_STATION => 'Print Station',
         self::CUTTING_STATION => 'Cutting Station',
+        self::DISPATCH => 'Dispatch',
         self::BILLING_LOGS => 'Billing Logs',
         self::SYSTEM_SETTINGS => 'System Settings',
     ];

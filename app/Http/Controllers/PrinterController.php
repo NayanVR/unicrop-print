@@ -83,10 +83,10 @@ class PrinterController extends Controller
             'sheets' => $validated['sheets'],
             'print_total' => $printTotal,
             'total_amount' => $printTotal,
-            'status' => 'completed',
+            'status' => 'dispatch',
             'printed_at' => now(),
         ]);
 
-        return redirect()->route('printer.index')->with('status', "Print marked done! Final bill: {$printJob->total_amount} Rs.");
+        return redirect()->route('printer.index')->with('status', 'Print marked done! Job sent to Dispatch.');
     }
 }

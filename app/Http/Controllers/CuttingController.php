@@ -52,10 +52,10 @@ class CuttingController extends Controller
             'cutting_rate' => $cuttingRate,
             'cutting_total' => $cuttingTotal,
             'total_amount' => $printJob->print_total + $cuttingTotal,
-            'status' => 'completed',
+            'status' => 'dispatch',
             'cut_at' => now(),
         ]);
 
-        return redirect()->route('cutting.index')->with('status', "Cutting done! Final bill: {$printJob->total_amount} Rs.");
+        return redirect()->route('cutting.index')->with('status', 'Cutting done! Job sent to Dispatch.');
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\PasswordResetRequestController;
 use App\Http\Controllers\CuttingController;
+use App\Http\Controllers\DispatchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PrinterController;
@@ -42,6 +43,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:'.Permission::CUTTING_STATION)->group(function () {
         Route::get('/cutting', [CuttingController::class, 'index'])->name('cutting.index');
         Route::patch('/cutting/{printJob}', [CuttingController::class, 'update'])->name('cutting.update');
+    });
+
+    Route::middleware('permission:'.Permission::DISPATCH)->group(function () {
+        Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
+        Route::post('/dispatch/bulk', [DispatchController::class, 'bulkDispatch'])->name('dispatch.bulk');
     });
 
     Route::middleware('permission:'.Permission::BILLING_LOGS)->group(function () {

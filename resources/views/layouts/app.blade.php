@@ -54,6 +54,11 @@
                             <i class="fa-solid fa-scissors w-4"></i> Cutting Station
                         </a>
                     @endif
+                    @if (auth()->user()->hasPermission('dispatch'))
+                        <a href="{{ route('dispatch.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('dispatch.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+                            <i class="fa-solid fa-truck w-4"></i> Dispatch
+                        </a>
+                    @endif
                     @if (auth()->user()->hasPermission('billing_logs'))
                         <a href="{{ route('records.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('records.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-receipt w-4"></i> Billing Logs
