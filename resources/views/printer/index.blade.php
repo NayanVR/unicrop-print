@@ -136,15 +136,39 @@
                             <td class="px-4 py-3">
                                 <input type="number" form="print-job-{{ $job->id }}" name="sheets" value="{{ $job->sheets }}" min="1" class="w-20 rounded border-slate-300 px-2 py-1 text-sm">
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3" x-data="{ open: false }">
                                 <form id="print-job-{{ $job->id }}" method="POST" action="{{ route('printer.update', $job) }}">
                                     @csrf
                                     @method('PATCH')
+                                    <input type="hidden" name="cutting_required" x-ref="cr" value="">
                                 </form>
                                 @if ($canPrint)
-                                    <button type="submit" form="print-job-{{ $job->id }}" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded inline-flex items-center gap-1">
+                                    <button type="button" @click="open = true" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded inline-flex items-center gap-1">
                                         Mark Printed <i class="fa-solid fa-arrow-right"></i>
                                     </button>
+                                    <dialog :open="open" @click.self="open = false"
+                                        class="rounded-2xl shadow-2xl p-0 border-0 w-80 backdrop:bg-black/50">
+                                        <div class="p-6 text-center">
+                                            <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <i class="fa-solid fa-scissors text-amber-500 text-xl"></i>
+                                            </div>
+                                            <h3 class="font-bold text-slate-800 text-base mb-1">Cutting Required?</h3>
+                                            <p class="text-slate-500 text-xs mb-5">Job <strong>#{{ $job->id }}</strong> — choose where it goes next.</p>
+                                            <div class="flex gap-3">
+                                                <button type="button"
+                                                    @click="$refs.cr.value = '1'; open = false; document.getElementById('print-job-{{ $job->id }}').submit()"
+                                                    class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2">
+                                                    <i class="fa-solid fa-scissors"></i> Cutting
+                                                </button>
+                                                <button type="button"
+                                                    @click="$refs.cr.value = '0'; open = false; document.getElementById('print-job-{{ $job->id }}').submit()"
+                                                    class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2">
+                                                    <i class="fa-solid fa-check"></i> Done
+                                                </button>
+                                            </div>
+                                            <button type="button" @click="open = false" class="mt-3 text-xs text-slate-400 hover:text-slate-600 w-full">Cancel</button>
+                                        </div>
+                                    </dialog>
                                 @else
                                     <span class="text-xs text-slate-400 italic">Printing blocked</span>
                                 @endif

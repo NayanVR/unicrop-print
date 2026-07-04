@@ -62,12 +62,12 @@ class PrinterController extends Controller
 
         $validated = $request->validate([
             'sheets' => ['required', 'integer', 'min:1'],
+            'cutting_required' => ['required', 'boolean'],
         ]);
 
         $printTotal = $validated['sheets'] * $printJob->rate;
-        $needsCutting = $printJob->needs_cutting && $printJob->printStation->requires_cutting;
 
-        if ($needsCutting) {
+        if ($validated['cutting_required']) {
             $printJob->update([
                 'sheets' => $validated['sheets'],
                 'print_total' => $printTotal,
