@@ -146,7 +146,9 @@
                                     <button type="button" @click="open = true" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-2 rounded inline-flex items-center gap-1">
                                         Mark Printed <i class="fa-solid fa-arrow-right"></i>
                                     </button>
-                                    <dialog :open="open" @click.self="open = false"
+                                    <dialog x-ref="dlg"
+                                        x-effect="open ? $refs.dlg.showModal() : ($refs.dlg.open && $refs.dlg.close())"
+                                        @click.self="open = false" @cancel.prevent="open = false"
                                         class="rounded-2xl shadow-2xl p-0 border-0 w-80 backdrop:bg-black/50">
                                         <div class="p-6 text-center">
                                             <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
