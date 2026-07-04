@@ -246,29 +246,73 @@
                 </div>
 
                 {{-- Set Password Modal --}}
-                <dialog id="set-password-{{ $user->id }}" class="rounded-2xl shadow-2xl p-0 w-80 border-0 backdrop:bg-black/50">
+                <dialog id="set-password-{{ $user->id }}" class="rounded-2xl shadow-2xl p-0 w-96 border-0 backdrop:bg-black/50"
+                    x-data="{
+                        pwd: '',
+                        copied: false,
+                        generate() {
+                            const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+                            let p = '';
+                            for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
+                            this.pwd = p;
+                            this.copied = false;
+                        },
+                        copy() {
+                            navigator.clipboard.writeText(this.pwd);
+                            this.copied = true;
+                            setTimeout(() => this.copied = false, 2000);
+                        }
+                    }">
                     <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
                         <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-key text-amber-500"></i> Set Password
+                            <i class="fa-solid fa-key text-amber-500"></i> Set Password — {{ $user->name }}
                         </h3>
                         <button type="button" onclick="document.getElementById('set-password-{{ $user->id }}').close()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
                     </div>
                     <form method="POST" action="{{ route('users.password.update', $user) }}" class="p-5 space-y-4">
                         @csrf
                         @method('PATCH')
-                        <p class="text-xs text-slate-500">Setting new password for <strong>{{ $user->name }}</strong></p>
-                        <div x-data="{ show: false }" class="relative">
-                            <input :type="show ? 'text' : 'password'" name="password" required minlength="8" placeholder="New password (min 8 chars)"
-                                class="w-full rounded-lg border-slate-300 px-3 py-2 pr-10 text-sm focus:border-[#3f9b3f] focus:ring-[#3f9b3f]/30">
-                            <button type="button" @click="show = !show"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                                <i :class="show ? 'fa-eye-slash' : 'fa-eye'" class="fa-solid text-sm"></i>
-                            </button>
+
+                        {{-- Auto-generate section --}}
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+                            <p class="text-xs font-semibold text-amber-700">Auto Generate Password</p>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="generate()"
+                                    class="text-xs bg-amber-500 hover:bg-amber-600 text-white font-semibold px-3 py-1.5 rounded-lg transition">
+                                    <i class="fa-solid fa-dice mr-1"></i> Generate
+                                </button>
+                                <template x-if="pwd">
+                                    <div class="flex items-center gap-2 flex-1">
+                                        <span class="font-mono text-sm font-bold text-slate-800 bg-white border border-amber-200 px-3 py-1 rounded-lg flex-1 text-center tracking-widest" x-text="pwd"></span>
+                                        <button type="button" @click="copy()"
+                                            class="text-xs px-2 py-1.5 rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-100 transition whitespace-nowrap">
+                                            <i class="fa-solid" :class="copied ? 'fa-check text-emerald-600' : 'fa-copy'"></i>
+                                            <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                            <template x-if="pwd">
+                                <p class="text-[10px] text-amber-600">Password generate thay gayo. Niche "Set This Password" click karo.</p>
+                            </template>
                         </div>
-                        <div class="flex justify-end gap-2">
+
+                        {{-- Hidden input auto-filled when generated, or manual --}}
+                        <div>
+                            <p class="text-xs font-semibold text-slate-600 mb-1">Or type manually:</p>
+                            <div class="relative">
+                                <input type="text" name="password" x-model="pwd" required minlength="8"
+                                    placeholder="Password type karo (min 8 chars)"
+                                    class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm font-mono focus:border-[#3f9b3f] focus:ring-[#3f9b3f]/30">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-1">
                             <button type="button" onclick="document.getElementById('set-password-{{ $user->id }}').close()"
                                 class="px-3 py-2 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Cancel</button>
-                            <button type="submit" class="px-3 py-2 text-xs rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold">Update Password</button>
+                            <button type="submit" class="px-4 py-2 text-xs rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold">
+                                <i class="fa-solid fa-check mr-1"></i> Set This Password
+                            </button>
                         </div>
                     </form>
                 </dialog>
