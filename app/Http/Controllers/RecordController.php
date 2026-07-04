@@ -40,11 +40,11 @@ class RecordController extends Controller
         }
 
         if ($month !== 'all') {
-            $query->whereMonth('cut_at', $month);
+            $query->whereMonth('created_at', $month);
         }
 
         if ($year !== 'all') {
-            $query->whereYear('cut_at', $year);
+            $query->whereYear('created_at', $year);
         }
 
         if ($status !== 'all') {
