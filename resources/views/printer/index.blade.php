@@ -70,7 +70,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @forelse ($jobs as $job)
-                        <tr>
+                        <tr class="{{ $job->needs_lamination ? 'bg-indigo-50 border-l-4 border-indigo-400' : '' }}">
                             <td class="px-4 py-3">#{{ $job->id }}</td>
                             <td class="px-4 py-3">
                                 @if ($job->fileUrl())
@@ -131,9 +131,13 @@
                             </td>
                             <td class="px-4 py-3">
                                 {{ $job->size->name }}<br>
-                                <span class="text-emerald-600 font-bold text-xs">Rate: {{ $job->rate }} Rs</span>
+                                <span class="text-emerald-600 font-bold text-xs">Rate: {{ $job->rate }} Rs</span><br>
                                 @if ($job->needs_lamination)
-                                    <br><span class="text-indigo-600 text-xs font-semibold"><i class="fa-solid fa-layer-group"></i> {{ $job->laminationType?->name ?? 'Lamination' }}</span>
+                                    <span class="inline-flex items-center gap-1 mt-1 bg-indigo-100 text-indigo-700 border border-indigo-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                                        <i class="fa-solid fa-layer-group text-[10px]"></i> {{ $job->laminationType?->name ?? 'Lamination' }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 mt-1 bg-slate-100 text-slate-400 text-[11px] px-2 py-0.5 rounded-full">No Lam</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
