@@ -1,6 +1,56 @@
 <x-app-layout>
     <x-slot name="header">Print Queue Station</x-slot>
 
+    {{-- Live new-job notification --}}
+    <div id="new-job-banner" class="hidden mb-4 bg-emerald-500 text-white rounded-xl px-5 py-3 flex items-center justify-between gap-4 shadow-lg">
+        <span class="flex items-center gap-2 font-semibold text-sm">
+            <i class="fa-solid fa-bell animate-bounce"></i>
+            <span id="new-job-text">New print jobs arrived!</span>
+        </span>
+        <button onclick="location.reload()"
+            class="bg-white text-emerald-700 font-bold text-xs px-4 py-1.5 rounded-lg hover:bg-emerald-50 transition">
+            Refresh Now
+        </button>
+    </div>
+
+    <script>
+        (function () {
+            const pollUrl = '{{ route('printer.poll') }}';
+            let knownLatestId = {{ $jobs->isNotEmpty() ? $jobs->first()->id : 0 }};
+            let knownCount = {{ $jobs->total() }};
+            let notified = false;
+
+            async function poll() {
+                try {
+                    const res = await fetch(pollUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!res.ok) return;
+                    const data = await res.json();
+
+                    if (!notified && (data.latest_id > knownLatestId || data.count > knownCount)) {
+                        notified = true;
+                        const diff = data.count - knownCount;
+                        document.getElementById('new-job-text').textContent =
+                            (diff > 0 ? diff + ' new print job' + (diff > 1 ? 's' : '') + ' arrived!' : 'Print queue updated!');
+                        document.getElementById('new-job-banner').classList.remove('hidden');
+                        // auto-reload after 8 seconds if user doesn't act
+                        setTimeout(() => location.reload(), 8000);
+                    }
+                } catch {}
+            }
+
+            // Poll every 10 seconds, pause when tab is hidden
+            let interval = setInterval(poll, 10000);
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    clearInterval(interval);
+                } else {
+                    poll();
+                    interval = setInterval(poll, 10000);
+                }
+            });
+        })();
+    </script>
+
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-900">Print Queue Station</h2>
         <p class="text-slate-500 text-sm mt-1">Process pending print jobs. Once done, they will be sent to the Cutting Station.</p>

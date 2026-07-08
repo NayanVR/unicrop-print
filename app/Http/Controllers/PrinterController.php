@@ -53,6 +53,22 @@ class PrinterController extends Controller
         ]);
     }
 
+    public function poll(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = $request->user();
+
+        $query = PrintJob::where('status', 'pending');
+
+        if (! $user->isAdmin()) {
+            $query->whereIn('print_station_id', $user->printStations()->pluck('print_stations.id'));
+        }
+
+        return response()->json([
+            'count' => $query->count(),
+            'latest_id' => $query->max('id') ?? 0,
+        ]);
+    }
+
     public function update(Request $request, PrintJob $printJob): RedirectResponse
     {
         $user = $request->user();

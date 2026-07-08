@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:'.Permission::PRINT_STATION)->group(function () {
         Route::get('/printer', [PrinterController::class, 'index'])->name('printer.index');
+        Route::get('/printer/poll', [PrinterController::class, 'poll'])->name('printer.poll');
         Route::patch('/printer/{printJob}', [PrinterController::class, 'update'])->name('printer.update');
     });
 
