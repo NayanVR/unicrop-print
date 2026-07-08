@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\CuttingType;
+use App\Models\LaminationType;
 use App\Models\PrintStation;
 use App\Models\PrintStationCuttingType;
+use App\Models\PrintStationLaminationType;
 use App\Models\PrintStationSize;
 use App\Models\Setting;
 use App\Models\Size;
@@ -28,6 +30,8 @@ class SettingsController extends Controller
             'stationRates' => PrintStationSize::all()->groupBy('print_station_id'),
             'cuttingTypes' => CuttingType::orderBy('name')->get(),
             'stationCuttingRates' => PrintStationCuttingType::all()->groupBy('print_station_id'),
+            'laminationTypes' => LaminationType::orderBy('name')->get(),
+            'stationLaminationRates' => PrintStationLaminationType::all()->groupBy('print_station_id'),
         ]);
     }
 
@@ -63,6 +67,14 @@ class SettingsController extends Controller
             PrintStationCuttingType::create([
                 'print_station_id' => $station->id,
                 'cutting_type_id' => $type->id,
+                'rate' => 0,
+            ]);
+        }
+
+        foreach (LaminationType::all() as $type) {
+            PrintStationLaminationType::create([
+                'print_station_id' => $station->id,
+                'lamination_type_id' => $type->id,
                 'rate' => 0,
             ]);
         }
@@ -263,5 +275,79 @@ class SettingsController extends Controller
         }
 
         return redirect()->route('settings.index')->with('status', 'Print station cutting rates updated.');
+    }
+
+    public function storeLaminationType(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:lamination_types,name'],
+        ]);
+
+        $type = LaminationType::create($validated);
+
+        if (LaminationType::count() === 1) {
+            $type->update(['is_default' => true]);
+        }
+
+        foreach (PrintStation::all() as $station) {
+            PrintStationLaminationType::create([
+                'print_station_id' => $station->id,
+                'lamination_type_id' => $type->id,
+                'rate' => 0,
+            ]);
+        }
+
+        return redirect()->route('settings.index')->with('status', 'Lamination type added.');
+    }
+
+    public function destroyLaminationType(LaminationType $laminationType): RedirectResponse
+    {
+        if (LaminationType::count() <= 1) {
+            return redirect()->route('settings.index')->with('error', 'At least one lamination type is required.');
+        }
+
+        $wasDefault = $laminationType->is_default;
+        $laminationType->delete();
+
+        if ($wasDefault) {
+            LaminationType::first()?->update(['is_default' => true]);
+        }
+
+        return redirect()->route('settings.index')->with('status', 'Lamination type deleted.');
+    }
+
+    public function setDefaultLaminationType(LaminationType $laminationType): RedirectResponse
+    {
+        LaminationType::query()->update(['is_default' => false]);
+        $laminationType->update(['is_default' => true]);
+
+        return redirect()->route('settings.index')->with('status', 'Default lamination type updated.');
+    }
+
+    public function updateStationLaminationRates(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'lamination_rates' => ['required', 'array'],
+            'lamination_rates.*.*' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $user = auth()->user();
+        $allowedIds = $user->isAdmin()
+            ? null
+            : $user->printStations()->pluck('print_stations.id')->toArray();
+
+        foreach ($validated['lamination_rates'] as $stationId => $typeRates) {
+            if ($allowedIds !== null && ! in_array((int) $stationId, $allowedIds)) {
+                continue;
+            }
+            foreach ($typeRates as $typeId => $rate) {
+                PrintStationLaminationType::updateOrCreate(
+                    ['print_station_id' => $stationId, 'lamination_type_id' => $typeId],
+                    ['rate' => $rate],
+                );
+            }
+        }
+
+        return redirect()->route('settings.index')->with('status', 'Lamination rates updated.');
     }
 }

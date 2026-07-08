@@ -263,5 +263,91 @@
                 <button type="submit" class="mt-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg">Save Cutting Rates</button>
             </form>
         </div>
+
+        <div class="bg-white border-t-4 border-indigo-500 border border-slate-200 rounded-xl p-6 self-start">
+            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Lamination Types</h3>
+            <p class="text-sm text-slate-500 mb-4">Manage lamination types. Rates are set per station below.</p>
+
+            @if (auth()->user()->isAdmin())
+                <form method="POST" action="{{ route('settings.lamination-types.store') }}" class="flex gap-3 items-end mb-4">
+                    @csrf
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold mb-1">Lamination Type Name</label>
+                        <input type="text" name="name" placeholder="e.g., Glossy" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
+                    </div>
+                    <button type="submit" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg h-[42px]">Add Type</button>
+                </form>
+            @endif
+
+            <ul class="space-y-2">
+                @foreach ($laminationTypes as $type)
+                    <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
+                        <div>
+                            <strong>{{ $type->name }}</strong>
+                            @if ($type->is_default)
+                                <span class="bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">DEFAULT</span>
+                            @endif
+                        </div>
+                        <div class="flex items-center gap-2">
+                            @unless ($type->is_default)
+                                <form method="POST" action="{{ route('settings.lamination-types.default', $type) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1.5 rounded">Default</button>
+                                </form>
+                            @endunless
+                            @if (auth()->user()->isAdmin())
+                                <form method="POST" action="{{ route('settings.lamination-types.destroy', $type) }}" onsubmit="return confirm('Delete this lamination type?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+
+        <div class="bg-white border-t-4 border-indigo-500 border border-slate-200 rounded-xl p-6 lg:col-span-2">
+            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-table-cells"></i> Lamination Rate Per Station & Type</h3>
+            <p class="text-sm text-slate-500 mb-4">Each print station can charge a different rate for each lamination type (per sheet).</p>
+
+            <form method="POST" action="{{ route('settings.station-lamination-rates.update') }}">
+                @csrf
+                @method('PATCH')
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-500">
+                            <tr>
+                                <th class="px-4 py-3 font-semibold">Station</th>
+                                @foreach ($laminationTypes as $type)
+                                    <th class="px-4 py-3 font-semibold">{{ $type->name }}</th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            @foreach ($stations as $station)
+                                <tr>
+                                    <td class="px-4 py-3 font-semibold whitespace-nowrap">{{ $station->name }}</td>
+                                    @foreach ($laminationTypes as $type)
+                                        @php
+                                            $rate = ($stationLaminationRates[$station->id] ?? collect())->firstWhere('lamination_type_id', $type->id)?->rate ?? 0;
+                                        @endphp
+                                        <td class="px-4 py-3">
+                                            <input type="number" step="0.01" min="0"
+                                                name="lamination_rates[{{ $station->id }}][{{ $type->id }}]"
+                                                value="{{ $rate }}"
+                                                class="w-24 rounded border-slate-300 px-2 py-1 text-sm">
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg">Save Lamination Rates</button>
+            </form>
+        </div>
     </div>
 </x-app-layout>

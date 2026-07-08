@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\URL;
 #[Fillable([
     'uploaded_by', 'print_station_id', 'note', 'file_path', 'file_name', 'file_size', 'mime_type',
     'size_id', 'rate', 'sheets', 'print_total', 'needs_cutting', 'cutting_type_id', 'cutting_jobs',
-    'cutting_rate', 'cutting_total', 'total_amount', 'status', 'printed_at', 'cut_at', 'dispatched_at',
+    'cutting_rate', 'cutting_total', 'needs_lamination', 'lamination_type_id', 'lamination_rate', 'lamination_total',
+    'total_amount', 'status', 'printed_at', 'cut_at', 'dispatched_at',
 ])]
 class PrintJob extends Model
 {
@@ -21,6 +22,9 @@ class PrintJob extends Model
             'rate' => 'decimal:2',
             'print_total' => 'decimal:2',
             'needs_cutting' => 'boolean',
+            'needs_lamination' => 'boolean',
+            'lamination_rate' => 'decimal:2',
+            'lamination_total' => 'decimal:2',
             'cutting_rate' => 'decimal:2',
             'cutting_total' => 'decimal:2',
             'total_amount' => 'decimal:2',
@@ -49,6 +53,11 @@ class PrintJob extends Model
     public function cuttingType(): BelongsTo
     {
         return $this->belongsTo(CuttingType::class);
+    }
+
+    public function laminationType(): BelongsTo
+    {
+        return $this->belongsTo(LaminationType::class);
     }
 
     public function fileUrl(): ?string

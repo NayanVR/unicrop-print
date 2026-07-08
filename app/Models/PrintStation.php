@@ -33,6 +33,11 @@ class PrintStation extends Model
         return $this->hasMany(PrintStationCuttingType::class);
     }
 
+    public function stationLaminationTypes(): HasMany
+    {
+        return $this->hasMany(PrintStationLaminationType::class);
+    }
+
     public function rateForSize(Size $size): float
     {
         return (float) ($this->stationSizes->firstWhere('size_id', $size->id)?->rate ?? $size->rate);
@@ -45,5 +50,14 @@ class PrintStation extends Model
         }
 
         return (float) ($this->stationCuttingTypes->firstWhere('cutting_type_id', $type->id)?->rate ?? 0);
+    }
+
+    public function rateForLaminationType(?LaminationType $type): float
+    {
+        if (! $type) {
+            return 0.0;
+        }
+
+        return (float) ($this->stationLaminationTypes->firstWhere('lamination_type_id', $type->id)?->rate ?? 0);
     }
 }

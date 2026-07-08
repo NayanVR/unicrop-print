@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::patch('/settings/station-rates', [SettingsController::class, 'updateStationRates'])->name('settings.station-rates.update');
         Route::patch('/settings/station-cutting-rates', [SettingsController::class, 'updateStationCuttingRates'])->name('settings.station-cutting-rates.update');
+        Route::patch('/settings/station-lamination-rates', [SettingsController::class, 'updateStationLaminationRates'])->name('settings.station-lamination-rates.update');
     });
 
     // Full settings management: system_settings permission (admin or granted)
@@ -87,6 +88,9 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/settings/cutting-types', [SettingsController::class, 'storeCuttingType'])->name('settings.cutting-types.store');
         Route::delete('/settings/cutting-types/{cuttingType}', [SettingsController::class, 'destroyCuttingType'])->name('settings.cutting-types.destroy');
+        Route::post('/settings/lamination-types', [SettingsController::class, 'storeLaminationType'])->name('settings.lamination-types.store');
+        Route::delete('/settings/lamination-types/{laminationType}', [SettingsController::class, 'destroyLaminationType'])->name('settings.lamination-types.destroy');
+        Route::patch('/settings/lamination-types/{laminationType}/default', [SettingsController::class, 'setDefaultLaminationType'])->name('settings.lamination-types.default');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -132,6 +132,9 @@
                             <td class="px-4 py-3">
                                 {{ $job->size->name }}<br>
                                 <span class="text-emerald-600 font-bold text-xs">Rate: {{ $job->rate }} Rs</span>
+                                @if ($job->needs_lamination)
+                                    <br><span class="text-indigo-600 text-xs font-semibold"><i class="fa-solid fa-layer-group"></i> {{ $job->laminationType?->name ?? 'Lamination' }}</span>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 <input type="number" form="print-job-{{ $job->id }}" name="sheets" value="{{ $job->sheets }}" min="1" class="w-20 rounded border-slate-300 px-2 py-1 text-sm">

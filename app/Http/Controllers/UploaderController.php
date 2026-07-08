@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CuttingType;
+use App\Models\LaminationType;
 use App\Models\PrintJob;
 use App\Models\PrintStation;
 use App\Models\PrintStationCuttingType;
+use App\Models\PrintStationLaminationType;
 use App\Models\PrintStationSize;
 use App\Models\Size;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +26,8 @@ class UploaderController extends Controller
             'stationRates' => PrintStationSize::all()->groupBy('print_station_id'),
             'cuttingTypes' => CuttingType::orderBy('name')->get(),
             'stationCuttingRates' => PrintStationCuttingType::all()->groupBy('print_station_id'),
+            'laminationTypes' => LaminationType::orderBy('name')->get(),
+            'stationLaminationRates' => PrintStationLaminationType::all()->groupBy('print_station_id'),
         ]);
     }
 
@@ -37,6 +41,8 @@ class UploaderController extends Controller
             'sheets' => ['required', 'integer', 'min:1'],
             'needs_cutting' => ['nullable', 'boolean'],
             'cutting_type_id' => ['nullable', 'required_if:needs_cutting,1', 'exists:cutting_types,id'],
+            'needs_lamination' => ['required', 'boolean'],
+            'lamination_type_id' => ['nullable', 'required_if:needs_lamination,1', 'exists:lamination_types,id'],
         ]);
 
         $size = Size::findOrFail($validated['size_id']);
@@ -44,6 +50,12 @@ class UploaderController extends Controller
         $rate = $station->rateForSize($size);
         $needsCutting = $station->requires_cutting && $request->boolean('needs_cutting');
         $cuttingTypeId = $needsCutting ? $validated['cutting_type_id'] : null;
+        $needsLamination = $request->boolean('needs_lamination');
+        $laminationTypeId = $needsLamination ? $validated['lamination_type_id'] : null;
+        $laminationRate = $needsLamination && $laminationTypeId
+            ? $station->load('stationLaminationTypes')->rateForLaminationType(LaminationType::find($laminationTypeId))
+            : 0;
+        $laminationTotal = $laminationRate * $validated['sheets'];
         $file = $request->file('design_file');
         $fileSize = $file->getSize();
         $mimeType = $file->getClientMimeType();
@@ -69,6 +81,10 @@ class UploaderController extends Controller
             'sheets' => $validated['sheets'],
             'needs_cutting' => $needsCutting,
             'cutting_type_id' => $cuttingTypeId,
+            'needs_lamination' => $needsLamination,
+            'lamination_type_id' => $laminationTypeId,
+            'lamination_rate' => $laminationRate,
+            'lamination_total' => $laminationTotal,
             'status' => 'pending',
         ]);
 
