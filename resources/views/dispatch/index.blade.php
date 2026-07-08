@@ -21,6 +21,7 @@
 
     <div x-data="{
         selected: [],
+        previewUrl: '', previewMime: '', previewName: '', previewOpen: false,
         toggleAll(jobs) {
             if (this.selected.length === jobs.length) {
                 this.selected = [];
@@ -29,6 +30,25 @@
             }
         }
     }">
+
+        {{-- File preview modal --}}
+        <dialog x-ref="previewDlg"
+            x-effect="previewOpen ? $refs.previewDlg.showModal() : ($refs.previewDlg.open && $refs.previewDlg.close())"
+            @click.self="previewOpen = false" @cancel.prevent="previewOpen = false"
+            class="fixed inset-0 z-50 w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl p-0 border-0 backdrop:bg-black/60 overflow-hidden">
+            <div class="flex items-center justify-between bg-slate-800 text-white px-5 py-3">
+                <span class="text-sm font-semibold truncate" x-text="previewName"></span>
+                <button @click="previewOpen = false" class="text-white/70 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <div class="bg-black flex items-center justify-center" style="height: calc(90vh - 52px)">
+                <template x-if="previewMime === 'application/pdf'">
+                    <iframe :src="previewUrl" class="w-full h-full border-0"></iframe>
+                </template>
+                <template x-if="previewMime !== 'application/pdf'">
+                    <img :src="previewUrl" :alt="previewName" class="max-w-full max-h-full object-contain">
+                </template>
+            </div>
+        </dialog>
 
         {{-- Today's jobs --}}
         <div class="bg-white border border-slate-200 rounded-xl p-6 mb-6">
@@ -52,9 +72,37 @@
                     @foreach ($todayJobs as $job)
                         <div x-data="{ editNote: false }"
                             :class="selected.includes({{ $job->id }}) ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200'"
-                            class="flex items-center gap-4 border rounded-xl px-4 py-3 transition hover:border-emerald-300">
+                            class="flex items-center gap-3 border rounded-xl px-4 py-3 transition hover:border-emerald-300">
                             <input type="checkbox" :value="{{ $job->id }}" x-model="selected"
                                 class="w-4 h-4 accent-emerald-500 flex-shrink-0 cursor-pointer">
+
+                            {{-- Thumbnail --}}
+                            @if ($job->fileUrl())
+                                @if (str_contains($job->mime_type ?? '', 'pdf'))
+                                    <button type="button"
+                                        @click.stop="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; previewOpen = true"
+                                        class="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-lg bg-red-50 border border-red-200 hover:bg-red-100 transition text-red-500 flex-col gap-0.5">
+                                        <i class="fa-solid fa-file-pdf text-xl"></i>
+                                        <span class="text-[9px] font-semibold">PDF</span>
+                                    </button>
+                                @elseif (str_starts_with($job->mime_type ?? '', 'image/'))
+                                    <button type="button"
+                                        @click.stop="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; previewOpen = true"
+                                        class="flex-shrink-0 block w-14 h-14 rounded-lg border border-slate-200 overflow-hidden hover:ring-2 hover:ring-emerald-400 transition">
+                                        <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}" class="w-full h-full object-cover" loading="lazy">
+                                    </button>
+                                @else
+                                    <div class="flex-shrink-0 w-14 h-14 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 flex-col gap-0.5">
+                                        <i class="fa-solid fa-file text-xl"></i>
+                                        <span class="text-[9px] font-semibold uppercase">{{ pathinfo($job->file_name, PATHINFO_EXTENSION) }}</span>
+                                    </div>
+                                @endif
+                            @else
+                                <div class="flex-shrink-0 w-14 h-14 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                    <i class="fa-solid fa-image text-xl"></i>
+                                </div>
+                            @endif
+
                             <div class="flex-1 min-w-0 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-sm">
                                 <div>
                                     <span class="text-xs text-slate-400 block">Job ID</span>
@@ -119,6 +167,7 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-slate-50 text-slate-500">
                             <tr>
+                                <th class="px-4 py-3 font-semibold">Preview</th>
                                 <th class="px-4 py-3 font-semibold">Job ID</th>
                                 <th class="px-4 py-3 font-semibold">Note</th>
                                 <th class="px-4 py-3 font-semibold">Station</th>
@@ -129,7 +178,34 @@
                         <tbody class="divide-y divide-slate-200">
                             @foreach ($otherJobs as $job)
                                 <tr x-data="{ editNote: false }">
-                                    <td class="px-4 py-3">#{{ $job->id }}</td>
+                                    <td class="px-4 py-3">
+                                        @if ($job->fileUrl())
+                                            @if (str_contains($job->mime_type ?? '', 'pdf'))
+                                                <button type="button"
+                                                    @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; previewOpen = true"
+                                                    class="flex items-center justify-center w-14 h-14 rounded-lg bg-red-50 border border-red-200 hover:bg-red-100 transition text-red-500 flex-col gap-0.5">
+                                                    <i class="fa-solid fa-file-pdf text-xl"></i>
+                                                    <span class="text-[9px] font-semibold">PDF</span>
+                                                </button>
+                                            @elseif (str_starts_with($job->mime_type ?? '', 'image/'))
+                                                <button type="button"
+                                                    @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; previewOpen = true"
+                                                    class="block w-14 h-14 rounded-lg border border-slate-200 overflow-hidden hover:ring-2 hover:ring-emerald-400 transition">
+                                                    <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}" class="w-full h-full object-cover" loading="lazy">
+                                                </button>
+                                            @else
+                                                <div class="w-14 h-14 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 flex-col gap-0.5">
+                                                    <i class="fa-solid fa-file text-xl"></i>
+                                                    <span class="text-[9px] font-semibold uppercase">{{ pathinfo($job->file_name, PATHINFO_EXTENSION) }}</span>
+                                                </div>
+                                            @endif
+                                        @else
+                                            <div class="w-14 h-14 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                                <i class="fa-solid fa-image text-xl"></i>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3 font-bold">#{{ $job->id }}</td>
                                     <td class="px-4 py-3">
                                         <div x-show="!editNote" class="flex items-center gap-1">
                                             <span>{{ $job->note ?: '—' }}</span>
