@@ -170,6 +170,10 @@
                             <i class="fa-solid fa-sliders text-slate-400"></i>
                             <span x-text="open ? 'Close' : 'Edit Access'"></span>
                         </button>
+                        <button type="button" onclick="document.getElementById('edit-info-{{ $user->id }}').showModal()"
+                            class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-sky-200 hover:bg-sky-50 text-sky-600 transition">
+                            <i class="fa-solid fa-pen text-sky-400"></i> Edit Info
+                        </button>
                         <div class="inline-flex items-center gap-1 text-xs font-medium rounded-lg border border-slate-200 overflow-hidden"
                             x-data="{ show: false }">
                             <button type="button" onclick="document.getElementById('set-password-{{ $user->id }}').showModal()"
@@ -263,6 +267,39 @@
                         </button>
                     </form>
                 </div>
+
+                {{-- Edit Info Modal --}}
+                <dialog id="edit-info-{{ $user->id }}" class="rounded-2xl shadow-2xl p-0 w-96 border-0 backdrop:bg-black/50">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-pen text-sky-500"></i> Edit User Info
+                        </h3>
+                        <button type="button" onclick="document.getElementById('edit-info-{{ $user->id }}').close()"
+                            class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+                    </div>
+                    <form method="POST" action="{{ route('users.info.update', $user) }}" class="p-6 space-y-4">
+                        @csrf
+                        @method('PATCH')
+                        <div>
+                            <label class="block text-sm font-semibold mb-1 text-slate-700">Name</label>
+                            <input type="text" name="name" value="{{ $user->name }}" required
+                                class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1 text-slate-700">Email</label>
+                            <input type="email" name="email" value="{{ $user->email }}" required
+                                class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                        <div class="flex justify-end gap-2 pt-1">
+                            <button type="button" onclick="document.getElementById('edit-info-{{ $user->id }}').close()"
+                                class="px-4 py-2 text-sm rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">Cancel</button>
+                            <button type="submit"
+                                class="px-4 py-2 text-sm rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold transition">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </dialog>
 
                 {{-- Set Password Modal --}}
                 <dialog id="set-password-{{ $user->id }}" class="rounded-2xl shadow-2xl p-0 w-96 border-0 backdrop:bg-black/50"

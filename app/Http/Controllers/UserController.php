@@ -61,6 +61,18 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('status', 'User created.');
     }
 
+    public function updateInfo(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+        ]);
+
+        $user->update($validated);
+
+        return redirect()->route('users.index')->with('status', "Info updated for {$user->name}.");
+    }
+
     public function updateAccess(Request $request, User $user): RedirectResponse
     {
         if ($user->id === $request->user()->id) {

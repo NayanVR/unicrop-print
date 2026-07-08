@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::patch('/users/{user}/info', [UserController::class, 'updateInfo'])->name('users.info.update');
         Route::patch('/users/{user}/access', [UserController::class, 'updateAccess'])->name('users.access.update');
         Route::patch('/users/{user}/password', [UserController::class, 'resetPassword'])->name('users.password.update');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
