@@ -134,16 +134,25 @@
         </form>
     </div>
 
-    {{-- My pending jobs --}}
-    @if ($myPendingJobs->isNotEmpty())
+    {{-- My jobs (all statuses) --}}
+    @if ($myJobs->isNotEmpty())
+        @php
+            $statusConfig = [
+                'pending'   => ['label' => 'Pending',   'class' => 'bg-amber-100 text-amber-700'],
+                'cutting'   => ['label' => 'Cutting',   'class' => 'bg-purple-100 text-purple-700'],
+                'dispatch'  => ['label' => 'Dispatch',  'class' => 'bg-sky-100 text-sky-700'],
+                'completed' => ['label' => 'Completed', 'class' => 'bg-emerald-100 text-emerald-700'],
+            ];
+        @endphp
         <div class="mt-8 max-w-xl">
             <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-clock text-amber-500"></i>
-                My Pending Jobs
-                <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ $myPendingJobs->count() }}</span>
+                <i class="fa-solid fa-list text-slate-500"></i>
+                My Jobs
+                <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full">{{ $myJobs->count() }}</span>
             </h3>
             <div class="space-y-2">
-                @foreach ($myPendingJobs as $job)
+                @foreach ($myJobs as $job)
+                    @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'class' => 'bg-slate-100 text-slate-500']; @endphp
                     <div class="bg-white border border-slate-200 rounded-xl px-4 py-3" x-data="{ editNote: false }">
                         <div class="flex items-start gap-3">
                             {{-- Thumbnail --}}
@@ -163,8 +172,9 @@
                             @endif
 
                             <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-0.5">
+                                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
                                     <span class="font-bold text-slate-700 text-sm">#{{ $job->id }}</span>
+                                    <span class="text-xs {{ $st['class'] }} px-2 py-0.5 rounded-full font-semibold">{{ $st['label'] }}</span>
                                     <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">{{ $job->printStation?->name ?? '—' }}</span>
                                     <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{{ $job->size?->name ?? '—' }}</span>
                                 </div>
@@ -186,15 +196,17 @@
                                 <div class="text-xs text-slate-400 mt-0.5">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
                             </div>
 
-                            {{-- Delete button --}}
-                            <form method="POST" action="{{ route('jobs.destroy', $job) }}"
-                                onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
-                                @csrf @method('DELETE')
-                                <button type="submit"
-                                    class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition flex-shrink-0" title="Delete">
-                                    <i class="fa-solid fa-trash text-sm"></i>
-                                </button>
-                            </form>
+                            {{-- Delete only for pending --}}
+                            @if ($job->status->value === 'pending')
+                                <form method="POST" action="{{ route('jobs.destroy', $job) }}"
+                                    onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit"
+                                        class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition flex-shrink-0" title="Delete">
+                                        <i class="fa-solid fa-trash text-sm"></i>
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 @endforeach

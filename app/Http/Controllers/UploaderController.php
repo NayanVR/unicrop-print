@@ -28,10 +28,10 @@ class UploaderController extends Controller
             'stationCuttingRates' => PrintStationCuttingType::all()->groupBy('print_station_id'),
             'laminationTypes' => LaminationType::orderBy('name')->get(),
             'stationLaminationRates' => PrintStationLaminationType::all()->groupBy('print_station_id'),
-            'myPendingJobs' => PrintJob::with(['printStation', 'size'])
+            'myJobs' => PrintJob::with(['printStation', 'size'])
                 ->where('uploaded_by', $request->user()->id)
-                ->where('status', 'pending')
                 ->orderByDesc('id')
+                ->limit(30)
                 ->get(),
         ]);
     }
