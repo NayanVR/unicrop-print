@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:'.Permission::BILLING_LOGS)->group(function () {
         Route::get('/records', [RecordController::class, 'index'])->name('records.index');
+        Route::get('/records/pdf', [RecordController::class, 'pdf'])->name('records.pdf');
     });
 
     // Settings view + rate editing: admin OR print_station users (print_station users see only their own stations)

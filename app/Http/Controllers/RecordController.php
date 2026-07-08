@@ -13,7 +13,88 @@ class RecordController extends Controller
         'id', 'total_amount', 'created_at', 'printed_at', 'cut_at', 'updated_at',
     ];
 
+    private const GST_RATE = 0.18;
+
     public function index(Request $request): View
+    {
+        [$query, $filters] = $this->buildQuery($request);
+
+        $completedQuery = (clone $query)->where('status', 'completed');
+
+        $totalRevenue = $completedQuery->sum('total_amount');
+        $gst = round($totalRevenue * self::GST_RATE, 2);
+
+        // Daily summary (completed jobs grouped by dispatched_at date or updated_at)
+        $dailySummary = (clone $query)
+            ->where('status', 'completed')
+            ->selectRaw('DATE(dispatched_at) as day, COUNT(*) as job_count, SUM(total_amount) as subtotal')
+            ->groupBy('day')
+            ->orderByDesc('day')
+            ->get();
+
+        // Monthly summary
+        $monthlySummary = (clone $query)
+            ->where('status', 'completed')
+            ->selectRaw("DATE_FORMAT(dispatched_at, '%Y-%m') as month_key, DATE_FORMAT(dispatched_at, '%M %Y') as month_label, COUNT(*) as job_count, SUM(total_amount) as subtotal")
+            ->groupBy('month_key', 'month_label')
+            ->orderByDesc('month_key')
+            ->get();
+
+        $jobs = $query->orderBy($filters['sort'], $filters['direction'])
+            ->paginate(20)
+            ->withQueryString();
+
+        $user = $request->user();
+
+        return view('records.index', [
+            'jobs' => $jobs,
+            'totalJobs' => $completedQuery->count(),
+            'totalRevenue' => $totalRevenue,
+            'gst' => $gst,
+            'gstRate' => self::GST_RATE * 100,
+            'grandTotal' => round($totalRevenue + $gst, 2),
+            'dailySummary' => $dailySummary,
+            'monthlySummary' => $monthlySummary,
+            'stations' => $user->isAdmin()
+                ? PrintStation::orderBy('name')->get()
+                : $user->printStations()->orderBy('name')->get(),
+            ...$filters,
+        ]);
+    }
+
+    public function pdf(Request $request): View
+    {
+        [$query, $filters] = $this->buildQuery($request);
+
+        $completedQuery = (clone $query)->where('status', 'completed');
+        $totalRevenue = $completedQuery->sum('total_amount');
+        $gst = round($totalRevenue * self::GST_RATE, 2);
+
+        $dailySummary = (clone $query)
+            ->where('status', 'completed')
+            ->selectRaw('DATE(dispatched_at) as day, COUNT(*) as job_count, SUM(total_amount) as subtotal')
+            ->groupBy('day')
+            ->orderByDesc('day')
+            ->get();
+
+        $jobs = (clone $query)->where('status', 'completed')
+            ->with(['size', 'printStation'])
+            ->orderBy('dispatched_at', 'desc')
+            ->get();
+
+        return view('records.pdf', [
+            'jobs' => $jobs,
+            'dailySummary' => $dailySummary,
+            'totalRevenue' => $totalRevenue,
+            'gst' => $gst,
+            'gstRate' => self::GST_RATE * 100,
+            'grandTotal' => round($totalRevenue + $gst, 2),
+            ...$filters,
+        ]);
+    }
+
+    /** @return array{0: \Illuminate\Database\Eloquent\Builder, 1: array<string, mixed>} */
+    private function buildQuery(Request $request): array
     {
         $user = $request->user();
 
@@ -58,26 +139,6 @@ class RecordController extends Controller
             });
         }
 
-        $totals = (clone $query)->where('status', 'completed');
-
-        $jobs = $query->orderBy($sort, $direction)
-            ->paginate(15)
-            ->withQueryString();
-
-        return view('records.index', [
-            'jobs' => $jobs,
-            'totalJobs' => $totals->count(),
-            'totalRevenue' => $totals->sum('total_amount'),
-            'month' => $month,
-            'year' => $year,
-            'status' => $status,
-            'search' => $search,
-            'sort' => $sort,
-            'direction' => $direction,
-            'stationId' => $stationId,
-            'stations' => $user->isAdmin()
-                ? PrintStation::orderBy('name')->get()
-                : $user->printStations()->orderBy('name')->get(),
-        ]);
+        return [$query, compact('month', 'year', 'status', 'search', 'stationId', 'sort', 'direction')];
     }
 }
