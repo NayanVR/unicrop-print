@@ -33,7 +33,7 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-2">
                     <i class="fa-solid fa-paperclip"></i> Select Design File <span class="text-red-500">*</span>
                 </label>
-                <input type="file" name="design_file" accept=".jpg,.jpeg,.png,.pdf" required
+                <input type="file" name="design_file" required
                     class="w-full text-sm text-slate-600 border border-dashed border-slate-400 rounded-lg bg-slate-50 p-2 cursor-pointer">
             </div>
 

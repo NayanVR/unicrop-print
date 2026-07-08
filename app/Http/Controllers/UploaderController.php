@@ -39,7 +39,7 @@ class UploaderController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'design_file' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:20480'],
+            'design_file' => ['required', 'file', 'max:51200'],
             'note' => ['nullable', 'string', 'max:255'],
             'size_id' => ['required', 'exists:sizes,id'],
             'print_station_id' => ['required', 'exists:print_stations,id'],
