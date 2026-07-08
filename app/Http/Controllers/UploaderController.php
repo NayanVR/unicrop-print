@@ -18,7 +18,7 @@ use Throwable;
 
 class UploaderController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('uploader.create', [
             'sizes' => Size::orderBy('name')->get(),
@@ -28,6 +28,11 @@ class UploaderController extends Controller
             'stationCuttingRates' => PrintStationCuttingType::all()->groupBy('print_station_id'),
             'laminationTypes' => LaminationType::orderBy('name')->get(),
             'stationLaminationRates' => PrintStationLaminationType::all()->groupBy('print_station_id'),
+            'myPendingJobs' => PrintJob::with(['printStation', 'size'])
+                ->where('uploaded_by', $request->user()->id)
+                ->where('status', 'pending')
+                ->orderByDesc('id')
+                ->get(),
         ]);
     }
 

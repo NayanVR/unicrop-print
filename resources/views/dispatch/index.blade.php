@@ -50,10 +50,11 @@
             @if ($todayJobs->count() > 0)
                 <div class="space-y-2 mb-4">
                     @foreach ($todayJobs as $job)
-                        <label :class="selected.includes({{ $job->id }}) ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200'"
-                            class="flex items-center gap-4 border rounded-xl px-4 py-3 cursor-pointer transition hover:border-emerald-300">
+                        <div x-data="{ editNote: false }"
+                            :class="selected.includes({{ $job->id }}) ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200'"
+                            class="flex items-center gap-4 border rounded-xl px-4 py-3 transition hover:border-emerald-300">
                             <input type="checkbox" :value="{{ $job->id }}" x-model="selected"
-                                class="w-4 h-4 accent-emerald-500 flex-shrink-0">
+                                class="w-4 h-4 accent-emerald-500 flex-shrink-0 cursor-pointer">
                             <div class="flex-1 min-w-0 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-sm">
                                 <div>
                                     <span class="text-xs text-slate-400 block">Job ID</span>
@@ -61,7 +62,16 @@
                                 </div>
                                 <div>
                                     <span class="text-xs text-slate-400 block">Note</span>
-                                    <span class="font-medium truncate block">{{ $job->note ?: '—' }}</span>
+                                    <div x-show="!editNote" class="flex items-center gap-1">
+                                        <span class="font-medium truncate">{{ $job->note ?: '—' }}</span>
+                                        <button type="button" @click.stop="editNote = true" class="text-sky-400 hover:text-sky-600 text-xs flex-shrink-0"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    </div>
+                                    <form x-show="editNote" @click.stop method="POST" action="{{ route('jobs.note.update', $job) }}" class="flex gap-1">
+                                        @csrf @method('PATCH')
+                                        <input type="text" name="note" value="{{ $job->note === '-' ? '' : $job->note }}" placeholder="Note..." class="rounded border-slate-300 px-1.5 py-0.5 text-xs w-24">
+                                        <button type="submit" class="bg-sky-500 text-white text-xs px-2 py-0.5 rounded font-semibold">Save</button>
+                                        <button type="button" @click.stop="editNote = false" class="text-xs text-slate-400">✕</button>
+                                    </form>
                                 </div>
                                 <div>
                                     <span class="text-xs text-slate-400 block">Station</span>
@@ -75,7 +85,7 @@
                             <div class="text-right text-xs text-slate-400 flex-shrink-0">
                                 {{ $job->updated_at->format('h:i A') }}
                             </div>
-                        </label>
+                        </div>
                     @endforeach
                 </div>
 
@@ -118,9 +128,20 @@
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                             @foreach ($otherJobs as $job)
-                                <tr>
+                                <tr x-data="{ editNote: false }">
                                     <td class="px-4 py-3">#{{ $job->id }}</td>
-                                    <td class="px-4 py-3">{{ $job->note ?: '—' }}</td>
+                                    <td class="px-4 py-3">
+                                        <div x-show="!editNote" class="flex items-center gap-1">
+                                            <span>{{ $job->note ?: '—' }}</span>
+                                            <button type="button" @click="editNote = true" class="text-sky-400 hover:text-sky-600 text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        </div>
+                                        <form x-show="editNote" method="POST" action="{{ route('jobs.note.update', $job) }}" class="flex gap-1">
+                                            @csrf @method('PATCH')
+                                            <input type="text" name="note" value="{{ $job->note === '-' ? '' : $job->note }}" placeholder="Note..." class="rounded border-slate-300 px-1.5 py-0.5 text-xs w-28">
+                                            <button type="submit" class="bg-sky-500 text-white text-xs px-2 py-0.5 rounded font-semibold">Save</button>
+                                            <button type="button" @click="editNote = false" class="text-xs text-slate-400">✕</button>
+                                        </form>
+                                    </td>
                                     <td class="px-4 py-3">
                                         <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">{{ $job->printStation?->name ?? '—' }}</span>
                                     </td>

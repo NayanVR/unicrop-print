@@ -3,6 +3,17 @@
 
     <h2 class="text-2xl font-bold text-slate-900 mb-6">Upload Design & File</h2>
 
+    @if (session('status'))
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i> {{ session('status') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-circle-xmark"></i> {{ session('error') }}
+        </div>
+    @endif
+
     <div class="bg-white border border-slate-200 rounded-xl p-6 max-w-xl">
         <form method="POST" action="{{ route('uploader.store') }}" enctype="multipart/form-data" x-data="{
             rates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->size_id => (float) $r->rate])])->toJson() }},
@@ -122,4 +133,72 @@
             </button>
         </form>
     </div>
+
+    {{-- My pending jobs --}}
+    @if ($myPendingJobs->isNotEmpty())
+        <div class="mt-8 max-w-xl">
+            <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-clock text-amber-500"></i>
+                My Pending Jobs
+                <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ $myPendingJobs->count() }}</span>
+            </h3>
+            <div class="space-y-2">
+                @foreach ($myPendingJobs as $job)
+                    <div class="bg-white border border-slate-200 rounded-xl px-4 py-3" x-data="{ editNote: false }">
+                        <div class="flex items-start gap-3">
+                            {{-- Thumbnail --}}
+                            @if ($job->fileUrl())
+                                @if (str_contains($job->mime_type ?? '', 'pdf'))
+                                    <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-red-400">
+                                        <i class="fa-solid fa-file-pdf text-xl"></i>
+                                    </div>
+                                @else
+                                    <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                        class="w-12 h-12 flex-shrink-0 rounded-lg object-cover border border-slate-200">
+                                @endif
+                            @else
+                                <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                    <i class="fa-solid fa-image text-xl"></i>
+                                </div>
+                            @endif
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <span class="font-bold text-slate-700 text-sm">#{{ $job->id }}</span>
+                                    <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">{{ $job->printStation?->name ?? '—' }}</span>
+                                    <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{{ $job->size?->name ?? '—' }}</span>
+                                </div>
+                                <div x-show="!editNote" class="flex items-center gap-2">
+                                    <span class="text-sm text-slate-600 truncate">{{ $job->note }}</span>
+                                    <button type="button" @click="editNote = true"
+                                        class="text-sky-500 hover:text-sky-700 text-xs flex-shrink-0">
+                                        <i class="fa-solid fa-pen-to-square"></i> Edit Note
+                                    </button>
+                                </div>
+                                <form x-show="editNote" method="POST" action="{{ route('jobs.note.update', $job) }}" class="flex gap-2 mt-1">
+                                    @csrf @method('PATCH')
+                                    <input type="text" name="note" value="{{ $job->note === '-' ? '' : $job->note }}"
+                                        placeholder="Enter note..."
+                                        class="flex-1 rounded border-slate-300 px-2 py-1 text-sm min-w-0">
+                                    <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-3 py-1 rounded font-semibold">Save</button>
+                                    <button type="button" @click="editNote = false" class="text-xs text-slate-400 hover:text-slate-600 px-2">Cancel</button>
+                                </form>
+                                <div class="text-xs text-slate-400 mt-0.5">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
+                            </div>
+
+                            {{-- Delete button --}}
+                            <form method="POST" action="{{ route('jobs.destroy', $job) }}"
+                                onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                    class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition flex-shrink-0" title="Delete">
+                                    <i class="fa-solid fa-trash text-sm"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 </x-app-layout>

@@ -6,6 +6,7 @@ use App\Http\Controllers\DispatchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PrinterController;
+use App\Http\Controllers\PrintJobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\SettingsController;
@@ -93,6 +94,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/settings/lamination-types/{laminationType}', [SettingsController::class, 'destroyLaminationType'])->name('settings.lamination-types.destroy');
         Route::patch('/settings/lamination-types/{laminationType}/default', [SettingsController::class, 'setDefaultLaminationType'])->name('settings.lamination-types.default');
     });
+
+    Route::patch('/jobs/{printJob}/note', [PrintJobController::class, 'updateNote'])->name('jobs.note.update');
+    Route::delete('/jobs/{printJob}', [PrintJobController::class, 'destroy'])->name('jobs.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

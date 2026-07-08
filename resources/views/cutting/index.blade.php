@@ -88,8 +88,17 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-4 py-3">
-                                <strong>Note: {{ $job->note }}</strong><br>
+                            <td class="px-4 py-3" x-data="{ editNote: false }">
+                                <div x-show="!editNote" class="flex items-center gap-1.5 mb-1">
+                                    <strong class="text-sm">{{ $job->note }}</strong>
+                                    <button type="button" @click="editNote = true" class="text-sky-400 hover:text-sky-600 text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+                                </div>
+                                <form x-show="editNote" method="POST" action="{{ route('jobs.note.update', $job) }}" class="flex gap-1.5 mb-1">
+                                    @csrf @method('PATCH')
+                                    <input type="text" name="note" value="{{ $job->note === '-' ? '' : $job->note }}" placeholder="Note..." class="rounded border-slate-300 px-2 py-1 text-sm w-36">
+                                    <button type="submit" class="bg-sky-500 text-white text-xs px-2 py-1 rounded font-semibold">Save</button>
+                                    <button type="button" @click="editNote = false" class="text-xs text-slate-400 hover:text-slate-600">✕</button>
+                                </form>
                                 <span class="text-xs text-slate-500">File: {{ $job->file_name }}</span><br>
                                 <span class="text-xs text-slate-400">
                                     {{ $job->formattedFileSize() ?? 'Unknown size' }}
