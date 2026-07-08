@@ -70,8 +70,20 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @forelse ($jobs as $job)
-                        <tr class="{{ $job->needs_lamination ? 'bg-indigo-50 border-l-4 border-indigo-400' : '' }}">
-                            <td class="px-4 py-3">#{{ $job->id }}</td>
+                        @if ($job->needs_lamination)
+                            {{-- Lamination banner row --}}
+                            <tr class="bg-indigo-600">
+                                <td colspan="8" class="px-4 py-1.5">
+                                    <span class="text-white text-xs font-bold flex items-center gap-2">
+                                        <i class="fa-solid fa-layer-group"></i>
+                                        LAMINATION REQUIRED — {{ $job->laminationType?->name ?? 'Lamination' }}
+                                        &nbsp;·&nbsp; {{ $job->lamination_rate }} Rs/sheet &nbsp;·&nbsp; Total: {{ number_format($job->lamination_total, 2) }} Rs
+                                    </span>
+                                </td>
+                            </tr>
+                        @endif
+                        <tr class="{{ $job->needs_lamination ? 'bg-indigo-50 ring-2 ring-inset ring-indigo-400' : '' }}">
+                            <td class="px-4 py-3 {{ $job->needs_lamination ? 'font-bold text-indigo-700' : '' }}">#{{ $job->id }}</td>
                             <td class="px-4 py-3">
                                 @if ($job->fileUrl())
                                     @if (str_contains($job->mime_type ?? '', 'pdf'))
@@ -84,7 +96,7 @@
                                     @else
                                         <button type="button"
                                             @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; open = true"
-                                            class="block w-16 h-16 rounded-lg border border-slate-200 overflow-hidden hover:ring-2 hover:ring-purple-400 transition">
+                                            class="block w-16 h-16 rounded-lg {{ $job->needs_lamination ? 'border-2 border-indigo-400 ring-2 ring-indigo-300' : 'border border-slate-200' }} overflow-hidden hover:ring-2 hover:ring-purple-400 transition">
                                             <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
                                                 class="w-full h-full object-cover" loading="lazy">
                                         </button>
@@ -133,8 +145,8 @@
                                 {{ $job->size->name }}<br>
                                 <span class="text-emerald-600 font-bold text-xs">Rate: {{ $job->rate }} Rs</span><br>
                                 @if ($job->needs_lamination)
-                                    <span class="inline-flex items-center gap-1 mt-1 bg-indigo-100 text-indigo-700 border border-indigo-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                                        <i class="fa-solid fa-layer-group text-[10px]"></i> {{ $job->laminationType?->name ?? 'Lamination' }}
+                                    <span class="inline-flex items-center gap-1.5 mt-1 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                                        <i class="fa-solid fa-layer-group"></i> {{ $job->laminationType?->name ?? 'Lamination' }}
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 mt-1 bg-slate-100 text-slate-400 text-[11px] px-2 py-0.5 rounded-full">No Lam</span>
