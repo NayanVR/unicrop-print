@@ -29,7 +29,7 @@ class PrintJobController extends Controller
             abort(403);
         }
 
-        if ($printJob->status->value !== 'pending') {
+        if (! $user->isAdmin() && $printJob->status->value !== 'pending') {
             return back()->with('error', 'Only pending jobs can be deleted.');
         }
 

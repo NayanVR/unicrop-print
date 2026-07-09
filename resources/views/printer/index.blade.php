@@ -252,6 +252,15 @@
                                 @else
                                     <span class="text-xs text-slate-400 italic">Printing blocked</span>
                                 @endif
+                                @if (auth()->user()->isAdmin())
+                                    <form method="POST" action="{{ route('jobs.destroy', $job) }}" class="mt-2"
+                                        onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-red-400 hover:text-red-600 hover:bg-red-50 text-xs px-2 py-1 rounded transition inline-flex items-center gap-1">
+                                            <i class="fa-solid fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty

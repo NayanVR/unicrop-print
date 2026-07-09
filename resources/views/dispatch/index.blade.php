@@ -130,8 +130,17 @@
                                     <span class="font-bold text-emerald-600">{{ $job->total_amount }} Rs</span>
                                 </div>
                             </div>
-                            <div class="text-right text-xs text-slate-400 flex-shrink-0">
-                                {{ $job->updated_at->format('h:i A') }}
+                            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                                <span class="text-xs text-slate-400">{{ $job->updated_at->format('h:i A') }}</span>
+                                @if (auth()->user()->isAdmin())
+                                    <form method="POST" action="{{ route('jobs.destroy', $job) }}"
+                                        onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-red-400 hover:text-red-600 text-xs inline-flex items-center gap-1">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -173,6 +182,9 @@
                                 <th class="px-4 py-3 font-semibold">Station</th>
                                 <th class="px-4 py-3 font-semibold">Amount</th>
                                 <th class="px-4 py-3 font-semibold">Date</th>
+                                @if (auth()->user()->isAdmin())
+                                    <th class="px-4 py-3 font-semibold"></th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
@@ -223,6 +235,17 @@
                                     </td>
                                     <td class="px-4 py-3 font-bold text-emerald-600">{{ $job->total_amount }} Rs</td>
                                     <td class="px-4 py-3 text-slate-400 text-xs">{{ $job->updated_at->format('d/m/Y h:i A') }}</td>
+                                    @if (auth()->user()->isAdmin())
+                                        <td class="px-4 py-3">
+                                            <form method="POST" action="{{ route('jobs.destroy', $job) }}"
+                                                onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="text-red-400 hover:text-red-600 hover:bg-red-50 text-xs px-2 py-1 rounded transition inline-flex items-center gap-1">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>
