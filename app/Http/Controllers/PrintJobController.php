@@ -33,12 +33,8 @@ class PrintJobController extends Controller
             return back()->with('error', 'Only pending jobs can be deleted.');
         }
 
-        if ($printJob->file_path) {
-            Storage::disk('s3')->delete($printJob->file_path);
-        }
+        $printJob->delete(); // soft delete — goes to bin
 
-        $printJob->delete();
-
-        return back()->with('status', "Job #$printJob->id deleted.");
+        return back()->with('status', "Job #$printJob->id moved to bin.");
     }
 }

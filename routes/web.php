@@ -11,6 +11,7 @@ use App\Http\Controllers\PrintJobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\BinController;
 use App\Http\Controllers\ChunkedUploadController;
 use App\Http\Controllers\UploaderController;
 use App\Http\Controllers\UserController;
@@ -91,6 +92,13 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('admin')->group(function () {
+        // Bin
+        Route::get('/bin', [BinController::class, 'index'])->name('bin.index');
+        Route::patch('/bin/{printJob}/restore', [BinController::class, 'restore'])->name('bin.restore')->withTrashed();
+        Route::delete('/bin/{printJob}', [BinController::class, 'destroy'])->name('bin.destroy')->withTrashed();
+        Route::post('/bin/purge', [BinController::class, 'purge'])->name('bin.purge');
+        Route::patch('/bin/days', [BinController::class, 'setBinDays'])->name('bin.days');
+
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::patch('/users/{user}/info', [UserController::class, 'updateInfo'])->name('users.info.update');
