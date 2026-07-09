@@ -33,7 +33,6 @@ class SettingsController extends Controller
             'stationCuttingRates' => PrintStationCuttingType::all()->groupBy('print_station_id'),
             'laminationTypes' => LaminationType::orderBy('name')->get(),
             'stationLaminationRates' => PrintStationLaminationType::all()->groupBy('print_station_id'),
-            'bottleSizes' => BottleSize::orderBy('name')->get(),
         ]);
     }
 
