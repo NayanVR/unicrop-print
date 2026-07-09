@@ -11,6 +11,7 @@ use App\Http\Controllers\PrintJobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ChunkedUploadController;
 use App\Http\Controllers\UploaderController;
 use App\Http\Controllers\UserController;
 use App\Support\Permission;
@@ -35,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:'.Permission::UPLOAD_DESIGN)->group(function () {
         Route::get('/uploader', [UploaderController::class, 'create'])->name('uploader.create');
         Route::post('/uploader', [UploaderController::class, 'store'])->name('uploader.store');
+        Route::post('/uploader/chunk', [ChunkedUploadController::class, 'upload'])->name('uploader.chunk');
     });
 
     Route::middleware('permission:'.Permission::PRINT_STATION)->group(function () {

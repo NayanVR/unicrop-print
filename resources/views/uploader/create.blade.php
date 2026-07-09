@@ -38,29 +38,80 @@
             uploading: false,
             uploadPct: 0,
             uploadDone: false,
-            submitForm(e) {
+            uploadError: '',
+            async submitForm(e) {
                 if (this.needsLamination === null) return;
+                const form = e.target.closest('form');
+                const fileInput = form.querySelector('[name=design_file]');
+                const file = fileInput.files[0];
+                if (!file) return;
+
                 this.uploading = true;
                 this.uploadPct = 0;
                 this.uploadDone = false;
-                const form = e.target.closest('form');
-                const fd = new FormData(form);
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', form.action);
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                xhr.upload.addEventListener('progress', ev => {
-                    if (ev.lengthComputable) this.uploadPct = Math.round(ev.loaded / ev.total * 100);
-                });
-                xhr.addEventListener('load', () => {
-                    this.uploadPct = 100;
-                    this.uploadDone = true;
-                    setTimeout(() => { window.location = '{{ route('uploader.create') }}?uploaded=1'; }, 600);
-                });
-                xhr.addEventListener('error', () => {
-                    this.uploading = false;
-                    alert('Upload failed. Please try again.');
-                });
-                xhr.send(fd);
+                this.uploadError = '';
+
+                const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+                const uploadId = crypto.randomUUID();
+                const csrfToken = form.querySelector('[name=_token]').value;
+                const chunkUrl = '{{ route('uploader.chunk') }}';
+
+                // Collect all non-file form fields
+                const formData = new FormData(form);
+                const fields = {};
+                for (const [k, v] of formData.entries()) {
+                    if (k !== 'design_file' && k !== '_token' && k !== '_method') fields[k] = v;
+                }
+
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * CHUNK_SIZE;
+                    const chunk = file.slice(start, start + CHUNK_SIZE);
+
+                    const fd = new FormData();
+                    fd.append('_token', csrfToken);
+                    fd.append('upload_id', uploadId);
+                    fd.append('chunk_index', i);
+                    fd.append('total_chunks', totalChunks);
+                    fd.append('chunk', chunk, file.name);
+                    fd.append('original_name', file.name);
+
+                    // Send form fields with last chunk
+                    if (i === totalChunks - 1) {
+                        for (const [k, v] of Object.entries(fields)) fd.append(k, v);
+                        // labels array
+                        this.labels.forEach((row, li) => {
+                            fd.append(`labels[${li}][name]`, row.name);
+                            fd.append(`labels[${li}][pcs]`, row.pcs);
+                        });
+                    }
+
+                    try {
+                        const res = await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', chunkUrl);
+                            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                            xhr.addEventListener('load', () => {
+                                if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText));
+                                else reject(new Error(xhr.responseText));
+                            });
+                            xhr.addEventListener('error', () => reject(new Error('Network error')));
+                            xhr.send(fd);
+                        });
+
+                        this.uploadPct = Math.round(((i + 1) / totalChunks) * 100);
+
+                        if (res.status === 'done') {
+                            this.uploadDone = true;
+                            setTimeout(() => { window.location = '{{ route('uploader.create') }}?uploaded=1'; }, 700);
+                            return;
+                        }
+                    } catch (err) {
+                        this.uploading = false;
+                        this.uploadError = 'Upload failed on chunk ' + (i+1) + '. Please try again.';
+                        return;
+                    }
+                }
             },
         }" @submit.prevent="submitForm($event)">
             @csrf
@@ -236,6 +287,7 @@
                 <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
                     <span x-text="uploadPct + '% uploaded'"></span>
                 </div>
+                <p x-show="uploadError" x-text="uploadError" class="text-red-500 text-xs mt-2"></p>
                 <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
                     <div class="h-3 rounded-full transition-all duration-200"
                         :class="uploadDone ? 'bg-emerald-500' : 'bg-teal-500'"
