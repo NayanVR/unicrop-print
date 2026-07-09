@@ -133,35 +133,57 @@
                 @if ($bottleSizes->isEmpty())
                     <p class="text-slate-400 text-sm text-center py-4">No bottle sizes added yet.</p>
                 @else
-                    {{-- Grouped bottles --}}
-                    @foreach ($groups as $group)
-                        @if ($group->bottleSizes->isNotEmpty())
-                            <div class="mb-3">
-                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 flex items-center gap-1">
-                                    <i class="fa-solid fa-layer-group text-slate-400"></i> {{ $group->name }}
-                                </p>
-                                <ul class="space-y-1.5">
-                                    @foreach ($group->bottleSizes as $bottle)
+                    <div x-data="{ active: null }">
+                        {{-- Grouped bottles --}}
+                        @foreach ($groups as $group)
+                            @if ($group->bottleSizes->isNotEmpty())
+                                <div class="mb-2">
+                                    <button type="button"
+                                        @click="active = (active === {{ $group->id }}) ? null : {{ $group->id }}"
+                                        class="w-full flex items-center justify-between gap-1 text-xs font-bold text-slate-500 uppercase tracking-wide mb-1 px-1 py-1 rounded hover:bg-slate-100 transition cursor-pointer">
+                                        <span class="flex items-center gap-1.5">
+                                            <i class="fa-solid fa-layer-group text-slate-400"></i>
+                                            {{ $group->name }}
+                                            <span class="bg-slate-200 text-slate-600 font-semibold px-1.5 py-0.5 rounded-full text-[10px] normal-case tracking-normal">{{ $group->bottleSizes->count() }}</span>
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"
+                                            :class="active === {{ $group->id }} ? 'rotate-180' : ''"></i>
+                                    </button>
+                                    <ul x-show="active === {{ $group->id }}" x-collapse class="space-y-1.5">
+                                        @foreach ($group->bottleSizes as $bottle)
+                                            @include('label-checker._bottle-item', ['bottle' => $bottle, 'groups' => $groups])
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        @endforeach
+
+                        {{-- Ungrouped bottles --}}
+                        @if ($ungrouped->isNotEmpty())
+                            <div class="mb-2">
+                                @if ($groups->isNotEmpty())
+                                    <button type="button"
+                                        @click="active = (active === 0) ? null : 0"
+                                        class="w-full flex items-center justify-between gap-1 text-xs font-bold text-slate-500 uppercase tracking-wide mb-1 px-1 py-1 rounded hover:bg-slate-100 transition cursor-pointer">
+                                        <span class="flex items-center gap-1.5">
+                                            <i class="fa-solid fa-layer-group text-slate-400"></i>
+                                            Ungrouped
+                                            <span class="bg-slate-200 text-slate-600 font-semibold px-1.5 py-0.5 rounded-full text-[10px] normal-case tracking-normal">{{ $ungrouped->count() }}</span>
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"
+                                            :class="active === 0 ? 'rotate-180' : ''"></i>
+                                    </button>
+                                    <ul x-show="active === 0" x-collapse class="space-y-1.5">
+                                @else
+                                    <ul class="space-y-1.5">
+                                @endif
+                                    @foreach ($ungrouped as $bottle)
                                         @include('label-checker._bottle-item', ['bottle' => $bottle, 'groups' => $groups])
                                     @endforeach
                                 </ul>
                             </div>
                         @endif
-                    @endforeach
-
-                    {{-- Ungrouped bottles --}}
-                    @if ($ungrouped->isNotEmpty())
-                        <div class="mb-3">
-                            @if ($groups->isNotEmpty())
-                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Ungrouped</p>
-                            @endif
-                            <ul class="space-y-1.5">
-                                @foreach ($ungrouped as $bottle)
-                                    @include('label-checker._bottle-item', ['bottle' => $bottle, 'groups' => $groups])
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                    </div>
                 @endif
             </div>
         </div>
