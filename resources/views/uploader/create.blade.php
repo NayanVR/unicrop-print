@@ -27,6 +27,9 @@
             needsLamination: null,
             laminationTypeId: '{{ $laminationTypes->firstWhere('is_default', true)?->id ?? $laminationTypes->first()?->id }}',
             sheetsCount: 1,
+            labels: [{ name: '', pcs: 1 }],
+            addLabelRow() { this.labels.push({ name: '', pcs: 1 }) },
+            removeLabelRow(i) { if (this.labels.length > 1) this.labels.splice(i, 1) },
         }">
             @csrf
 
@@ -126,17 +129,13 @@
             </div>
 
             {{-- Label contents --}}
-            <div class="mb-5" x-data="{
-                labels: [{ name: '', pcs: 1 }],
-                addRow() { this.labels.push({ name: '', pcs: 1 }) },
-                removeRow(i) { if (this.labels.length > 1) this.labels.splice(i, 1) }
-            }">
+            <div class="mb-5">
                 <label class="block text-sm font-semibold text-slate-700 mb-2">
                     <i class="fa-solid fa-tags text-teal-600"></i> Sheet Contents (Optional)
                 </label>
                 <p class="text-xs text-slate-400 mb-3">Sheet ma ketla label che ane ketla pcs — system total calculate karse.</p>
 
-                <template x-for="(row, i) in labels" :key="i">
+                <template x-for="(row, i) in labels" :key="i" >
                     <div class="flex gap-2 mb-2 items-center">
                         <input type="text" :name="`labels[${i}][name]`" x-model="row.name"
                             placeholder="Label name (e.g. Ultra Gold 1ltr)"
@@ -145,16 +144,16 @@
                             placeholder="Pcs"
                             class="w-20 rounded-lg border-slate-300 px-3 py-2 text-sm text-center">
                         <span class="text-xs text-slate-400 font-semibold whitespace-nowrap">
-                            × <span x-text="$root.sheetsCount"></span> = <span class="text-teal-700 font-bold" x-text="row.pcs * $root.sheetsCount"></span>
+                            × <span x-text="sheetsCount"></span> = <span class="text-teal-700 font-bold" x-text="row.pcs * sheetsCount"></span>
                         </span>
-                        <button type="button" @click="removeRow(i)" x-show="labels.length > 1"
+                        <button type="button" @click="removeLabelRow(i)" x-show="labels.length > 1"
                             class="text-red-400 hover:text-red-600 p-1 rounded transition">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
                 </template>
 
-                <button type="button" @click="addRow()"
+                <button type="button" @click="addLabelRow()"
                     class="mt-1 text-teal-600 hover:text-teal-800 text-sm font-semibold flex items-center gap-1">
                     <i class="fa-solid fa-plus"></i> Add another label
                 </button>
