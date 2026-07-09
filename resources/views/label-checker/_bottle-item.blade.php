@@ -4,7 +4,7 @@
             <span class="font-medium text-sm">{{ $bottle->name }}</span>
             <span class="ml-1.5 text-xs text-slate-400">{{ $bottle->label_width_mm }} × {{ $bottle->label_height_mm }} mm</span>
         </div>
-        @if (auth()->user()->isAdmin())
+        @if (auth()->user()->hasPermission('label_checker'))
             <div class="flex items-center gap-1">
                 <button type="button" @click="editing = true"
                     class="text-sky-400 hover:text-sky-600 hover:bg-sky-50 p-1.5 rounded transition">
@@ -20,7 +20,7 @@
             </div>
         @endif
     </div>
-    @if (auth()->user()->isAdmin())
+    @if (auth()->user()->hasPermission('label_checker'))
         <form x-show="editing" method="POST" action="{{ route('settings.bottle-sizes.update', $bottle) }}" class="space-y-1.5">
             @csrf @method('PATCH')
             <input type="text" name="name" value="{{ $bottle->name }}"

@@ -56,7 +56,7 @@
                 </h3>
                 <p class="text-xs text-slate-400 mb-4">Add bottle names and their label dimensions. Organise into groups.</p>
 
-                @if (auth()->user()->isAdmin())
+                @if (auth()->user()->hasPermission('label_checker'))
                     {{-- Add bottle form --}}
                     <form method="POST" action="{{ route('settings.bottle-sizes.store') }}" class="mb-5 space-y-2">
                         @csrf
