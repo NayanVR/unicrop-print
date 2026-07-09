@@ -5,6 +5,7 @@ use App\Http\Controllers\CuttingController;
 use App\Http\Controllers\DispatchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\LabelCheckerController;
 use App\Http\Controllers\PrinterController;
 use App\Http\Controllers\PrintJobController;
 use App\Http\Controllers\ProfileController;
@@ -65,6 +66,12 @@ Route::middleware('auth')->group(function () {
         Route::patch('/settings/station-lamination-rates', [SettingsController::class, 'updateStationLaminationRates'])->name('settings.station-lamination-rates.update');
     });
 
+    // Bottle sizes: admin only
+    Route::middleware('admin')->group(function () {
+        Route::post('/settings/bottle-sizes', [SettingsController::class, 'storeBottleSize'])->name('settings.bottle-sizes.store');
+        Route::delete('/settings/bottle-sizes/{bottleSize}', [SettingsController::class, 'destroyBottleSize'])->name('settings.bottle-sizes.destroy');
+    });
+
     // Full settings management: system_settings permission (admin or granted)
     Route::middleware('permission:'.Permission::SYSTEM_SETTINGS)->group(function () {
         Route::post('/settings/sizes', [SettingsController::class, 'storeSize'])->name('settings.sizes.store');
@@ -97,6 +104,9 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/jobs/{printJob}/note', [PrintJobController::class, 'updateNote'])->name('jobs.note.update');
     Route::delete('/jobs/{printJob}', [PrintJobController::class, 'destroy'])->name('jobs.destroy');
+
+    Route::get('/label-checker', [LabelCheckerController::class, 'index'])->name('label-checker.index');
+    Route::post('/label-checker', [LabelCheckerController::class, 'check'])->name('label-checker.check');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

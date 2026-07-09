@@ -349,5 +349,52 @@
                 <button type="submit" class="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg">Save Lamination Rates</button>
             </form>
         </div>
+
+        {{-- Bottle Sizes --}}
+        @if (auth()->user()->isAdmin())
+        <div class="bg-white border-t-4 border-teal-500 border border-slate-200 rounded-xl p-6 self-start">
+            <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-bottle-water text-teal-600"></i> Bottle Sizes (Label Checker)</h3>
+            <p class="text-sm text-slate-500 mb-4">Define bottle names and their required label dimensions in mm. Used by the Label Size Checker.</p>
+
+            <form method="POST" action="{{ route('settings.bottle-sizes.store') }}" class="mb-4 space-y-3">
+                @csrf
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Bottle Name</label>
+                    <input type="text" name="name" placeholder="e.g., 100ml Round Bottle" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
+                </div>
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold mb-1">Label Width (mm)</label>
+                        <input type="number" step="0.1" min="1" name="label_width_mm" placeholder="e.g., 80" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold mb-1">Label Height (mm)</label>
+                        <input type="number" step="0.1" min="1" name="label_height_mm" placeholder="e.g., 55" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold px-4 py-2 rounded-lg">Add Bottle Size</button>
+            </form>
+
+            <ul class="space-y-2">
+                @forelse ($bottleSizes as $bottle)
+                    <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
+                        <div>
+                            <strong class="text-sm">{{ $bottle->name }}</strong>
+                            <span class="ml-2 text-xs text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                                {{ $bottle->label_width_mm }} × {{ $bottle->label_height_mm }} mm
+                            </span>
+                        </div>
+                        <form method="POST" action="{{ route('settings.bottle-sizes.destroy', $bottle) }}" onsubmit="return confirm('Delete {{ addslashes($bottle->name) }}?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </li>
+                @empty
+                    <li class="text-sm text-slate-400 text-center py-4">No bottle sizes added yet.</li>
+                @endforelse
+            </ul>
+        </div>
+        @endif
+
     </div>
 </x-app-layout>

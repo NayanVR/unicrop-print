@@ -69,6 +69,9 @@
                             <i class="fa-solid fa-gear w-4"></i> System Settings
                         </a>
                     @endif
+                    <a href="{{ route('label-checker.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('label-checker.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+                        <i class="fa-solid fa-tag w-4"></i> Label Checker
+                    </a>
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('users.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-user-gear w-4"></i> Manage Users

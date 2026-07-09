@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BottleSize;
 use App\Models\CuttingType;
 use App\Models\LaminationType;
 use App\Models\PrintStation;
@@ -32,6 +33,7 @@ class SettingsController extends Controller
             'stationCuttingRates' => PrintStationCuttingType::all()->groupBy('print_station_id'),
             'laminationTypes' => LaminationType::orderBy('name')->get(),
             'stationLaminationRates' => PrintStationLaminationType::all()->groupBy('print_station_id'),
+            'bottleSizes' => BottleSize::orderBy('name')->get(),
         ]);
     }
 
@@ -349,5 +351,25 @@ class SettingsController extends Controller
         }
 
         return redirect()->route('settings.index')->with('status', 'Lamination rates updated.');
+    }
+
+    public function storeBottleSize(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'label_width_mm' => ['required', 'numeric', 'min:1'],
+            'label_height_mm' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        BottleSize::create($validated);
+
+        return redirect()->route('settings.index')->with('status', 'Bottle size added.');
+    }
+
+    public function destroyBottleSize(BottleSize $bottleSize): RedirectResponse
+    {
+        $bottleSize->delete();
+
+        return redirect()->route('settings.index')->with('status', 'Bottle size deleted.');
     }
 }
