@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
     // Bottle sizes: admin only
     Route::middleware('admin')->group(function () {
         Route::post('/settings/bottle-sizes', [SettingsController::class, 'storeBottleSize'])->name('settings.bottle-sizes.store');
+        Route::patch('/settings/bottle-sizes/{bottleSize}', [SettingsController::class, 'updateBottleSize'])->name('settings.bottle-sizes.update');
         Route::delete('/settings/bottle-sizes/{bottleSize}', [SettingsController::class, 'destroyBottleSize'])->name('settings.bottle-sizes.destroy');
     });
 

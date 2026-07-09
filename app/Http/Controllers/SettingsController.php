@@ -352,6 +352,19 @@ class SettingsController extends Controller
         return redirect()->route('settings.index')->with('status', 'Lamination rates updated.');
     }
 
+    public function updateBottleSize(Request $request, BottleSize $bottleSize): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'label_width_mm' => ['required', 'numeric', 'min:1'],
+            'label_height_mm' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        $bottleSize->update($validated);
+
+        return redirect()->route('label-checker.index')->with('status', 'Bottle size updated.');
+    }
+
     public function storeBottleSize(Request $request): RedirectResponse
     {
         $validated = $request->validate([
