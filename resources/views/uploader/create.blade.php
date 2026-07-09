@@ -26,6 +26,7 @@
             cuttingTypeId: '{{ $cuttingTypes->firstWhere('is_default', true)?->id ?? $cuttingTypes->first()?->id }}',
             needsLamination: null,
             laminationTypeId: '{{ $laminationTypes->firstWhere('is_default', true)?->id ?? $laminationTypes->first()?->id }}',
+            sheetsCount: 1,
         }">
             @csrf
 
@@ -63,7 +64,7 @@
 
             <div class="mb-5">
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Number of Copies / Sheets <span class="text-red-500">*</span></label>
-                <input type="number" name="sheets" min="1" value="1" required
+                <input type="number" name="sheets" min="1" value="1" required x-model.number="sheetsCount"
                     class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
             </div>
 
@@ -124,6 +125,41 @@
                 </div>
             </div>
 
+            {{-- Label contents --}}
+            <div class="mb-5" x-data="{
+                labels: [{ name: '', pcs: 1 }],
+                addRow() { this.labels.push({ name: '', pcs: 1 }) },
+                removeRow(i) { if (this.labels.length > 1) this.labels.splice(i, 1) }
+            }">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <i class="fa-solid fa-tags text-teal-600"></i> Sheet Contents (Optional)
+                </label>
+                <p class="text-xs text-slate-400 mb-3">Sheet ma ketla label che ane ketla pcs — system total calculate karse.</p>
+
+                <template x-for="(row, i) in labels" :key="i">
+                    <div class="flex gap-2 mb-2 items-center">
+                        <input type="text" :name="`labels[${i}][name]`" x-model="row.name"
+                            placeholder="Label name (e.g. Ultra Gold 1ltr)"
+                            class="flex-1 rounded-lg border-slate-300 px-3 py-2 text-sm">
+                        <input type="number" :name="`labels[${i}][pcs]`" x-model.number="row.pcs" min="1"
+                            placeholder="Pcs"
+                            class="w-20 rounded-lg border-slate-300 px-3 py-2 text-sm text-center">
+                        <span class="text-xs text-slate-400 font-semibold whitespace-nowrap">
+                            × <span x-text="$root.sheetsCount"></span> = <span class="text-teal-700 font-bold" x-text="row.pcs * $root.sheetsCount"></span>
+                        </span>
+                        <button type="button" @click="removeRow(i)" x-show="labels.length > 1"
+                            class="text-red-400 hover:text-red-600 p-1 rounded transition">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </template>
+
+                <button type="button" @click="addRow()"
+                    class="mt-1 text-teal-600 hover:text-teal-800 text-sm font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-plus"></i> Add another label
+                </button>
+            </div>
+
             <button type="submit"
                 :disabled="needsLamination === null"
                 :class="needsLamination !== null ? 'bg-emerald-500 hover:bg-emerald-600 cursor-pointer' : 'bg-slate-300 cursor-not-allowed'"
@@ -133,6 +169,25 @@
             </button>
         </form>
     </div>
+
+    {{-- Today's label summary --}}
+    @if ($dailySummary->isNotEmpty())
+        <div class="mt-8 max-w-xl bg-teal-50 border border-teal-200 rounded-xl p-5">
+            <h3 class="text-sm font-bold text-teal-800 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-chart-bar text-teal-600"></i>
+                Today's Label Summary
+                <span class="text-xs font-normal text-teal-600">({{ today()->format('d/m/Y') }})</span>
+            </h3>
+            <div class="space-y-1.5">
+                @foreach ($dailySummary as $row)
+                    <div class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-teal-100">
+                        <span class="text-sm text-slate-700 font-medium">{{ $row->label_name }}</span>
+                        <span class="text-sm font-bold text-teal-700">{{ number_format($row->total_pcs) }} pcs</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     {{-- Jobs tabs --}}
     @php
@@ -206,6 +261,16 @@
                                         <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-3 py-1 rounded font-semibold">Save</button>
                                         <button type="button" @click="editNote = false" class="text-xs text-slate-400 hover:text-slate-600 px-2">Cancel</button>
                                     </form>
+                                    @if ($job->jobLabels->isNotEmpty())
+                                        <div class="mt-1.5 flex flex-wrap gap-1">
+                                            @foreach ($job->jobLabels as $lbl)
+                                                <span class="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs px-2 py-0.5 rounded-full">
+                                                    {{ $lbl->label_name }}
+                                                    <span class="font-bold">{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</span>
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                     <div class="text-xs text-slate-400 mt-0.5">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
                                 </div>
                                 @if ($job->status->value === 'pending')
@@ -257,6 +322,16 @@
                                         <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{{ $job->size?->name ?? '—' }}</span>
                                     </div>
                                     <div class="text-sm text-slate-600 truncate">{{ $job->note }}</div>
+                                    @if ($job->jobLabels->isNotEmpty())
+                                        <div class="mt-1.5 flex flex-wrap gap-1">
+                                            @foreach ($job->jobLabels as $lbl)
+                                                <span class="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs px-2 py-0.5 rounded-full">
+                                                    {{ $lbl->label_name }}
+                                                    <span class="font-bold">{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</span>
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                     <div class="text-xs text-slate-400 mt-0.5">
                                         {{ $job->uploader?->name ?? '—' }} &middot; {{ $job->created_at->format('d/m/Y h:i A') }}
                                     </div>

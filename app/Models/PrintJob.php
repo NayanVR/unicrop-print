@@ -6,6 +6,7 @@ use App\Enums\JobStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\URL;
 
 #[Fillable([
@@ -58,6 +59,11 @@ class PrintJob extends Model
     public function laminationType(): BelongsTo
     {
         return $this->belongsTo(LaminationType::class);
+    }
+
+    public function jobLabels(): HasMany
+    {
+        return $this->hasMany(PrintJobLabel::class);
     }
 
     public function fileUrl(): ?string
