@@ -3,7 +3,7 @@
 
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-900">Label Size Checker</h2>
-        <p class="text-slate-500 text-sm mt-1">Upload a label image to find which bottle sizes it matches.</p>
+        <p class="text-slate-500 text-sm mt-1">Upload up to 50 label images at once to find which bottle sizes they match.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -14,25 +14,26 @@
             {{-- Upload form --}}
             <div class="bg-white border border-slate-200 rounded-xl p-6">
                 <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-tag text-teal-500"></i> Upload Label
+                    <i class="fa-solid fa-tag text-teal-500"></i> Upload Labels
                 </h3>
-
-                @if (isset($error))
-                    <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">
-                        <i class="fa-solid fa-circle-xmark"></i> {{ $error }}
-                    </div>
-                @endif
 
                 <form method="POST" action="{{ route('label-checker.check') }}" enctype="multipart/form-data">
                     @csrf
-                    <div class="mb-4">
+                    <div class="mb-3" x-data="{ count: 0 }">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">
-                            Label Image <span class="text-red-500">*</span>
-                            <span class="font-normal text-slate-400">(PNG or JPG)</span>
+                            Select Label Images <span class="text-red-500">*</span>
+                            <span class="font-normal text-slate-400">(PNG or JPG, up to 50)</span>
                         </label>
-                        <input type="file" name="label_file" accept=".jpg,.jpeg,.png" required
+                        <input type="file" name="label_files[]" accept=".jpg,.jpeg,.png" multiple required
+                            @change="count = $event.target.files.length"
                             class="w-full text-sm text-slate-600 border border-dashed border-slate-400 rounded-lg bg-slate-50 p-3 cursor-pointer">
-                        @error('label_file')
+                        <p x-show="count > 0" class="text-xs text-teal-600 mt-1 font-semibold">
+                            <span x-text="count"></span> file<span x-show="count > 1">s</span> selected
+                        </p>
+                        @error('label_files')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        @error('label_files.*')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -42,7 +43,7 @@
                     </p>
                     <button type="submit"
                         class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg py-2.5 flex items-center justify-center gap-2 transition">
-                        <i class="fa-solid fa-magnifying-glass"></i> Check Label Size
+                        <i class="fa-solid fa-magnifying-glass"></i> Check Label Sizes
                     </button>
                 </form>
             </div>
@@ -75,7 +76,6 @@
                     <ul class="space-y-1.5">
                         @foreach ($bottleSizes as $bottle)
                             <li x-data="{ editing: false }" class="border border-slate-100 bg-slate-50 rounded-lg px-3 py-2">
-                                {{-- View mode --}}
                                 <div x-show="!editing" class="flex items-center justify-between">
                                     <div>
                                         <span class="font-medium text-sm">{{ $bottle->name }}</span>
@@ -95,7 +95,6 @@
                                         </form>
                                     </div>
                                 </div>
-                                {{-- Edit mode --}}
                                 <form x-show="editing" method="POST" action="{{ route('settings.bottle-sizes.update', $bottle) }}" class="space-y-1.5">
                                     @csrf @method('PATCH')
                                     <input type="text" name="name" value="{{ $bottle->name }}"
@@ -121,105 +120,98 @@
         </div>
 
         {{-- Right columns: Results --}}
-        <div class="lg:col-span-2 space-y-4">
-            @if (isset($result))
-                {{-- Detected dimensions --}}
-                <div class="bg-white border border-slate-200 rounded-xl p-6">
-                    <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-ruler-combined text-slate-500"></i> Detected Dimensions
-                    </h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                        <div class="bg-slate-50 rounded-lg p-3 text-center col-span-2 sm:col-span-1">
-                            <div class="text-xs text-slate-400 mb-1">File</div>
-                            <div class="font-semibold text-slate-700 truncate text-xs">{{ $result['filename'] }}</div>
-                        </div>
-                        <div class="bg-slate-50 rounded-lg p-3 text-center">
-                            <div class="text-xs text-slate-400 mb-1">DPI</div>
-                            <div class="font-bold text-slate-800 text-lg">{{ $result['dpi'] }}</div>
-                        </div>
-                        <div class="bg-teal-50 border border-teal-200 rounded-lg p-3 text-center">
-                            <div class="text-xs text-teal-600 mb-1">Width</div>
-                            <div class="font-bold text-teal-700 text-xl">{{ $result['widthMm'] }} mm</div>
-                            <div class="text-xs text-slate-400">{{ $result['pixelW'] }} px</div>
-                        </div>
-                        <div class="bg-teal-50 border border-teal-200 rounded-lg p-3 text-center">
-                            <div class="text-xs text-teal-600 mb-1">Height</div>
-                            <div class="font-bold text-teal-700 text-xl">{{ $result['heightMm'] }} mm</div>
-                            <div class="text-xs text-slate-400">{{ $result['pixelH'] }} px</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="lg:col-span-2">
+            @if (isset($results))
+                @php
+                    $matched   = collect($results)->filter(fn($r) => !isset($r['error']) && $r['matches']->isNotEmpty());
+                    $unmatched = collect($results)->filter(fn($r) => !isset($r['error']) && $r['matches']->isEmpty());
+                    $errors    = collect($results)->filter(fn($r) => isset($r['error']));
+                @endphp
 
-                {{-- Matching bottles --}}
-                <div class="bg-white border border-slate-200 rounded-xl p-6">
-                    <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-bottle-water text-teal-500"></i> Matching Bottles
-                    </h3>
-                    @if ($result['matches']->isNotEmpty())
-                        <div class="space-y-2">
-                            @foreach ($result['matches'] as $bottle)
-                                @php
-                                    $bw = (float) $bottle->label_width_mm;
-                                    $bh = (float) $bottle->label_height_mm;
-                                    $rotated = !(abs($result['widthMm'] - $bw) <= 2 && abs($result['heightMm'] - $bh) <= 2);
-                                @endphp
-                                <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-300 rounded-xl px-4 py-3">
-                                    <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <i class="fa-solid fa-check text-white text-sm"></i>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-bold text-emerald-800">{{ $bottle->name }}</div>
-                                        <div class="text-xs text-emerald-600">
-                                            Label: {{ $bw }} × {{ $bh }} mm
-                                            @if ($rotated)
-                                                <span class="ml-2 bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[10px] font-semibold">ROTATED FIT</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <i class="fa-solid fa-circle-check text-emerald-500 text-2xl flex-shrink-0"></i>
-                                </div>
-                            @endforeach
+                {{-- Summary bar --}}
+                <div class="flex flex-wrap gap-3 mb-4">
+                    <div class="bg-slate-800 text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-sm font-semibold">
+                        <i class="fa-solid fa-images"></i> {{ count($results) }} label{{ count($results) > 1 ? 's' : '' }} checked
+                    </div>
+                    @if ($matched->count())
+                        <div class="bg-emerald-100 text-emerald-700 rounded-xl px-4 py-2.5 flex items-center gap-2 text-sm font-semibold">
+                            <i class="fa-solid fa-circle-check"></i> {{ $matched->count() }} matched
                         </div>
-                    @else
-                        <div class="flex flex-col items-center py-8 text-center text-slate-400">
-                            <i class="fa-solid fa-circle-xmark text-4xl mb-3 text-red-300"></i>
-                            <p class="font-semibold text-slate-600">No matching bottle sizes found</p>
-                            <p class="text-sm mt-1">
-                                Label is {{ $result['widthMm'] }} × {{ $result['heightMm'] }} mm —
-                                no bottle configured with this label size (±2 mm).
-                            </p>
+                    @endif
+                    @if ($unmatched->count())
+                        <div class="bg-red-100 text-red-600 rounded-xl px-4 py-2.5 flex items-center gap-2 text-sm font-semibold">
+                            <i class="fa-solid fa-circle-xmark"></i> {{ $unmatched->count() }} no match
+                        </div>
+                    @endif
+                    @if ($errors->count())
+                        <div class="bg-amber-100 text-amber-700 rounded-xl px-4 py-2.5 flex items-center gap-2 text-sm font-semibold">
+                            <i class="fa-solid fa-triangle-exclamation"></i> {{ $errors->count() }} error{{ $errors->count() > 1 ? 's' : '' }}
                         </div>
                     @endif
                 </div>
 
-                {{-- All bottles reference --}}
-                @if ($bottleSizes->isNotEmpty())
-                    <div class="bg-white border border-slate-200 rounded-xl p-6">
-                        <h3 class="font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-list text-slate-400"></i> All Bottle Sizes
-                        </h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            @foreach ($bottleSizes as $bottle)
-                                @php $isMatch = $result['matches']->contains('id', $bottle->id); @endphp
-                                <div class="border rounded-lg px-3 py-2.5 text-sm {{ $isMatch ? 'border-emerald-300 bg-emerald-50' : 'border-slate-100 bg-slate-50' }}">
-                                    <div class="font-semibold {{ $isMatch ? 'text-emerald-700' : 'text-slate-700' }} flex items-center gap-1">
-                                        @if ($isMatch) <i class="fa-solid fa-check text-emerald-500 text-xs"></i> @endif
-                                        {{ $bottle->name }}
+                <div class="space-y-3">
+                    @foreach ($results as $r)
+                        @if (isset($r['error']))
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                                <div>
+                                    <span class="font-semibold text-sm text-amber-800">{{ $r['filename'] }}</span>
+                                    <span class="text-xs text-amber-600 ml-2">{{ $r['error'] }}</span>
+                                </div>
+                            </div>
+                        @elseif ($r['matches']->isNotEmpty())
+                            <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4">
+                                <div class="flex items-start gap-3 flex-wrap">
+                                    <div class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-check text-white text-xs"></i>
                                     </div>
-                                    <div class="text-xs {{ $isMatch ? 'text-emerald-600' : 'text-slate-400' }}">
-                                        {{ $bottle->label_width_mm }} × {{ $bottle->label_height_mm }} mm
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-emerald-800 text-sm truncate">{{ $r['filename'] }}</div>
+                                        <div class="text-xs text-emerald-600 mt-0.5">
+                                            {{ $r['widthMm'] }} × {{ $r['heightMm'] }} mm &nbsp;·&nbsp; {{ $r['dpi'] }} DPI &nbsp;·&nbsp; {{ $r['pixelW'] }}×{{ $r['pixelH'] }} px
+                                        </div>
+                                        <div class="flex flex-wrap gap-1.5 mt-2">
+                                            @foreach ($r['matches'] as $bottle)
+                                                @php
+                                                    $bw = (float) $bottle->label_width_mm;
+                                                    $bh = (float) $bottle->label_height_mm;
+                                                    $rotated = !(abs($r['widthMm'] - $bw) <= 2 && abs($r['heightMm'] - $bh) <= 2);
+                                                @endphp
+                                                <span class="inline-flex items-center gap-1 bg-emerald-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+                                                    <i class="fa-solid fa-bottle-water text-[10px]"></i>
+                                                    {{ $bottle->name }}
+                                                    @if ($rotated)
+                                                        <span class="bg-white/20 text-white text-[9px] px-1 rounded">rotated</span>
+                                                    @endif
+                                                </span>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+                            </div>
+                        @else
+                            <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-3">
+                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i class="fa-solid fa-xmark text-red-400 text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-slate-700 text-sm truncate">{{ $r['filename'] }}</div>
+                                    <div class="text-xs text-slate-400 mt-0.5">
+                                        {{ $r['widthMm'] }} × {{ $r['heightMm'] }} mm &nbsp;·&nbsp; {{ $r['dpi'] }} DPI &nbsp;·&nbsp; {{ $r['pixelW'] }}×{{ $r['pixelH'] }} px
+                                    </div>
+                                    <div class="text-xs text-red-500 mt-1">No matching bottle size (±2 mm)</div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
 
             @else
                 <div class="bg-slate-50 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center py-20 text-center text-slate-400">
                     <i class="fa-solid fa-magnifying-glass text-5xl mb-4 text-slate-300"></i>
-                    <p class="font-semibold text-slate-500">Upload a label to see results</p>
-                    <p class="text-sm mt-1">The matched bottle sizes will appear here.</p>
+                    <p class="font-semibold text-slate-500">Upload labels to see results</p>
+                    <p class="text-sm mt-1">Select one or more PNG/JPG files and click Check.</p>
                 </div>
             @endif
         </div>
