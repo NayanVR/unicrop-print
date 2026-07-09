@@ -32,10 +32,20 @@ class DispatchController extends Controller
             ->tap($stationFilter)
             ->orderBy('updated_at', 'desc');
 
+        $summaryQuery = PrintJob::query()
+            ->where('status', 'dispatch')
+            ->tap($stationFilter)
+            ->selectRaw('DATE(updated_at) as day, COUNT(*) as total')
+            ->groupBy('day')
+            ->orderByDesc('day')
+            ->get();
+
         return view('dispatch.index', [
-            'todayJobs' => $query->get(),
-            'otherJobs' => $allQuery->get(),
-            'date' => $date,
+            'todayJobs'      => $query->get(),
+            'otherJobs'      => $allQuery->get(),
+            'date'           => $date,
+            'pendingTotal'   => $summaryQuery->sum('total'),
+            'pendingByDate'  => $summaryQuery,
         ]);
     }
 

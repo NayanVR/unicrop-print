@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">Dispatch</x-slot>
 
-    <div class="mb-6 flex items-center justify-between flex-wrap gap-3">
+    <div class="mb-4 flex items-start justify-between flex-wrap gap-3">
         <div>
             <h2 class="text-2xl font-bold text-slate-900">Dispatch</h2>
             <p class="text-slate-500 text-sm mt-1">Select jobs ready to dispatch and mark them as completed.</p>
@@ -12,6 +12,42 @@
                 class="rounded border-slate-300 px-3 py-2 text-sm">
         </form>
     </div>
+
+    {{-- Pending dispatch summary --}}
+    @if ($pendingTotal > 0)
+        <div class="mb-6 bg-white border border-sky-200 border-t-4 border-t-sky-500 rounded-xl p-4" x-data="{ open: false }">
+            <div class="flex items-center justify-between gap-3 cursor-pointer" @click="open = !open">
+                <div class="flex items-center gap-3">
+                    <div class="bg-sky-100 text-sky-700 rounded-xl px-4 py-2 flex items-center gap-2 font-bold text-lg">
+                        <i class="fa-solid fa-truck-fast"></i>
+                        {{ $pendingTotal }} jobs pending dispatch
+                    </div>
+                </div>
+                <button type="button" class="text-xs text-sky-500 font-semibold flex items-center gap-1">
+                    Date-wise breakdown
+                    <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+            </div>
+
+            <div x-show="open" x-collapse class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                @foreach ($pendingByDate as $row)
+                    <a href="{{ route('dispatch.index', ['date' => $row->day]) }}"
+                        class="flex items-center justify-between bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg px-3 py-2 transition group">
+                        <span class="text-sm font-semibold text-slate-700 group-hover:text-sky-800">
+                            {{ \Carbon\Carbon::parse($row->day)->format('d M Y') }}
+                        </span>
+                        <span class="bg-sky-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            {{ $row->total }}
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @else
+        <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2 text-emerald-700 text-sm font-semibold">
+            <i class="fa-solid fa-circle-check"></i> All caught up — no pending dispatches!
+        </div>
+    @endif
 
     @if (session('status'))
         <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
