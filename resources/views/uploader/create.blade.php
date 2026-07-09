@@ -135,16 +135,24 @@
                 </label>
                 <p class="text-xs text-slate-400 mb-3">Sheet ma ketla label che ane ketla pcs — system total calculate karse.</p>
 
-                <template x-for="(row, i) in labels" :key="i" >
+                {{-- Datalist for autocomplete --}}
+                <datalist id="label-suggestions">
+                    @foreach ($labelSuggestions as $s)
+                        <option value="{{ $s }}">
+                    @endforeach
+                </datalist>
+
+                <template x-for="(row, i) in labels" :key="i">
                     <div class="flex gap-2 mb-2 items-center">
                         <input type="text" :name="`labels[${i}][name]`" x-model="row.name"
+                            list="label-suggestions"
                             placeholder="Label name (e.g. Ultra Gold 1ltr)"
                             class="flex-1 rounded-lg border-slate-300 px-3 py-2 text-sm">
                         <input type="number" :name="`labels[${i}][pcs]`" x-model.number="row.pcs" min="1"
                             placeholder="Pcs"
                             class="w-20 rounded-lg border-slate-300 px-3 py-2 text-sm text-center">
                         <span class="text-xs text-slate-400 font-semibold whitespace-nowrap">
-                            × <span x-text="sheetsCount"></span> = <span class="text-teal-700 font-bold" x-text="row.pcs * sheetsCount"></span>
+                            × <span x-text="sheetsCount"></span> = <span class="text-teal-700 font-bold" x-text="(parseInt(row.pcs) || 0) * sheetsCount"></span>
                         </span>
                         <button type="button" @click="removeLabelRow(i)" x-show="labels.length > 1"
                             class="text-red-400 hover:text-red-600 p-1 rounded transition">

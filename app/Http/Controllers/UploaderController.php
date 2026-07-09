@@ -39,6 +39,10 @@ class UploaderController extends Controller
                 ->limit(50)
                 ->get(),
             'dailySummary' => $this->dailySummary(),
+            'labelSuggestions' => PrintJobLabel::query()
+                ->selectRaw('DISTINCT label_name')
+                ->orderBy('label_name')
+                ->pluck('label_name'),
         ]);
     }
 
