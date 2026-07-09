@@ -201,10 +201,40 @@
 
             {{-- Upload progress --}}
             <div x-show="uploading" class="mb-3">
-                <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-                    <span x-show="!uploadDone">Uploading...</span>
-                    <span x-show="uploadDone" class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> Upload complete!</span>
-                    <span x-text="uploadPct + '%'"></span>
+
+                {{-- Dancing emoji --}}
+                <div x-show="!uploadDone" class="flex flex-col items-center py-4">
+                    <style>
+                        @keyframes dance {
+                            0%   { transform: rotate(-15deg) translateY(0px) scale(1); }
+                            15%  { transform: rotate(15deg)  translateY(-8px) scale(1.1); }
+                            30%  { transform: rotate(-10deg) translateY(0px) scale(1); }
+                            45%  { transform: rotate(10deg)  translateY(-5px) scale(1.05); }
+                            60%  { transform: rotate(-15deg) translateY(0px) scale(1); }
+                            75%  { transform: rotate(15deg)  translateY(-8px) scale(1.1); }
+                            90%  { transform: rotate(-8deg)  translateY(0px) scale(1); }
+                            100% { transform: rotate(-15deg) translateY(0px) scale(1); }
+                        }
+                        @keyframes shadow-pulse {
+                            0%, 100% { transform: scaleX(1); opacity: 0.3; }
+                            40%       { transform: scaleX(0.6); opacity: 0.15; }
+                        }
+                        .dancer { animation: dance 0.7s ease-in-out infinite; display: inline-block; font-size: 3.5rem; line-height: 1; }
+                        .dancer-shadow { width: 40px; height: 8px; background: radial-gradient(ellipse, #94a3b8 0%, transparent 70%); margin: 2px auto 0; animation: shadow-pulse 0.7s ease-in-out infinite; }
+                    </style>
+                    <span class="dancer">🕺</span>
+                    <div class="dancer-shadow"></div>
+                    <p class="text-xs text-slate-400 mt-3 font-medium animate-pulse">Uploading your file... hang tight!</p>
+                </div>
+
+                {{-- Done state --}}
+                <div x-show="uploadDone" class="flex flex-col items-center py-3">
+                    <span style="font-size:3rem">🎉</span>
+                    <p class="text-xs text-emerald-600 font-bold mt-1">Upload complete!</p>
+                </div>
+
+                <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                    <span x-text="uploadPct + '% uploaded'"></span>
                 </div>
                 <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
                     <div class="h-3 rounded-full transition-all duration-200"
