@@ -91,13 +91,15 @@ Route::middleware('auth')->group(function () {
         Route::patch('/settings/cutting-types/{cuttingType}/default', [SettingsController::class, 'setDefaultCuttingType'])->name('settings.cutting-types.default');
     });
 
-    Route::middleware('admin')->group(function () {
-        // Bin
+    Route::middleware('permission:bin')->group(function () {
         Route::get('/bin', [BinController::class, 'index'])->name('bin.index');
         Route::patch('/bin/{printJob}/restore', [BinController::class, 'restore'])->name('bin.restore')->withTrashed();
         Route::delete('/bin/{printJob}', [BinController::class, 'destroy'])->name('bin.destroy')->withTrashed();
         Route::post('/bin/purge', [BinController::class, 'purge'])->name('bin.purge');
         Route::patch('/bin/days', [BinController::class, 'setBinDays'])->name('bin.days');
+    });
+
+    Route::middleware('admin')->group(function () {
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
