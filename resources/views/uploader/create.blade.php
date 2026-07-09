@@ -51,7 +51,7 @@
                 this.uploadDone = false;
                 this.uploadError = '';
 
-                const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+                const CHUNK_SIZE = 900 * 1024; // 900KB — stays under nginx default 1MB limit
                 const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
                 const uploadId = crypto.randomUUID();
                 const csrfToken = form.querySelector('[name=_token]').value;

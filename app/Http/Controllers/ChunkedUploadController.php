@@ -24,7 +24,7 @@ class ChunkedUploadController extends Controller
             'upload_id'    => ['required', 'string', 'max:64', 'regex:/^[a-f0-9\-]+$/'],
             'chunk_index'  => ['required', 'integer', 'min:0'],
             'total_chunks' => ['required', 'integer', 'min:1'],
-            'chunk'        => ['required', 'file'],
+            'chunk'        => ['required', 'file', 'max:1024'],
         ]);
 
         $uploadId    = $request->input('upload_id');
