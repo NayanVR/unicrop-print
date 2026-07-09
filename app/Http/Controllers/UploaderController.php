@@ -31,7 +31,11 @@ class UploaderController extends Controller
             'myJobs' => PrintJob::with(['printStation', 'size'])
                 ->where('uploaded_by', $request->user()->id)
                 ->orderByDesc('id')
-                ->limit(30)
+                ->limit(50)
+                ->get(),
+            'allJobs' => PrintJob::with(['printStation', 'size', 'uploader'])
+                ->orderByDesc('id')
+                ->limit(50)
                 ->get(),
         ]);
     }

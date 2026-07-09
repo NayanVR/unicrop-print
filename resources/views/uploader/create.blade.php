@@ -134,83 +134,138 @@
         </form>
     </div>
 
-    {{-- My jobs (all statuses) --}}
-    @if ($myJobs->isNotEmpty())
-        @php
-            $statusConfig = [
-                'pending'   => ['label' => 'Pending',   'class' => 'bg-amber-100 text-amber-700'],
-                'cutting'   => ['label' => 'Cutting',   'class' => 'bg-purple-100 text-purple-700'],
-                'dispatch'  => ['label' => 'Dispatch',  'class' => 'bg-sky-100 text-sky-700'],
-                'completed' => ['label' => 'Completed', 'class' => 'bg-emerald-100 text-emerald-700'],
-            ];
-        @endphp
-        <div class="mt-8 max-w-xl">
-            <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-list text-slate-500"></i>
-                My Jobs
-                <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full">{{ $myJobs->count() }}</span>
-            </h3>
-            <div class="space-y-2">
-                @foreach ($myJobs as $job)
-                    @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'class' => 'bg-slate-100 text-slate-500']; @endphp
-                    <div class="bg-white border border-slate-200 rounded-xl px-4 py-3" x-data="{ editNote: false }">
-                        <div class="flex items-start gap-3">
-                            {{-- Thumbnail --}}
-                            @if ($job->fileUrl())
-                                @if (str_contains($job->mime_type ?? '', 'pdf'))
-                                    <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-red-400">
-                                        <i class="fa-solid fa-file-pdf text-xl"></i>
-                                    </div>
-                                @else
-                                    <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
-                                        class="w-12 h-12 flex-shrink-0 rounded-lg object-cover border border-slate-200">
-                                @endif
-                            @else
-                                <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
-                                    <i class="fa-solid fa-image text-xl"></i>
-                                </div>
-                            @endif
-
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                                    <span class="font-bold text-slate-700 text-sm">#{{ $job->id }}</span>
-                                    <span class="text-xs {{ $st['class'] }} px-2 py-0.5 rounded-full font-semibold">{{ $st['label'] }}</span>
-                                    <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">{{ $job->printStation?->name ?? '—' }}</span>
-                                    <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{{ $job->size?->name ?? '—' }}</span>
-                                </div>
-                                <div x-show="!editNote" class="flex items-center gap-2">
-                                    <span class="text-sm text-slate-600 truncate">{{ $job->note }}</span>
-                                    <button type="button" @click="editNote = true"
-                                        class="text-sky-500 hover:text-sky-700 text-xs flex-shrink-0">
-                                        <i class="fa-solid fa-pen-to-square"></i> Edit Note
-                                    </button>
-                                </div>
-                                <form x-show="editNote" method="POST" action="{{ route('jobs.note.update', $job) }}" class="flex gap-2 mt-1">
-                                    @csrf @method('PATCH')
-                                    <input type="text" name="note" value="{{ $job->note === '-' ? '' : $job->note }}"
-                                        placeholder="Enter note..."
-                                        class="flex-1 rounded border-slate-300 px-2 py-1 text-sm min-w-0">
-                                    <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-3 py-1 rounded font-semibold">Save</button>
-                                    <button type="button" @click="editNote = false" class="text-xs text-slate-400 hover:text-slate-600 px-2">Cancel</button>
-                                </form>
-                                <div class="text-xs text-slate-400 mt-0.5">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
-                            </div>
-
-                            {{-- Delete only for pending --}}
-                            @if ($job->status->value === 'pending')
-                                <form method="POST" action="{{ route('jobs.destroy', $job) }}"
-                                    onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit"
-                                        class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition flex-shrink-0" title="Delete">
-                                        <i class="fa-solid fa-trash text-sm"></i>
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
+    {{-- Jobs tabs --}}
+    @php
+        $statusConfig = [
+            'pending'   => ['label' => 'Pending',   'class' => 'bg-amber-100 text-amber-700'],
+            'cutting'   => ['label' => 'Cutting',   'class' => 'bg-purple-100 text-purple-700'],
+            'dispatch'  => ['label' => 'Dispatch',  'class' => 'bg-sky-100 text-sky-700'],
+            'completed' => ['label' => 'Completed', 'class' => 'bg-emerald-100 text-emerald-700'],
+        ];
+    @endphp
+    <div class="mt-8 max-w-xl" x-data="{ tab: 'my' }">
+        {{-- Tab buttons --}}
+        <div class="flex gap-1 mb-4 bg-slate-100 rounded-xl p-1 w-fit">
+            <button type="button" @click="tab = 'my'"
+                :class="tab === 'my' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'"
+                class="px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                <i class="fa-solid fa-user"></i> My Jobs
+                <span class="bg-slate-200 text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $myJobs->count() }}</span>
+            </button>
+            <button type="button" @click="tab = 'all'"
+                :class="tab === 'all' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'"
+                class="px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                <i class="fa-solid fa-list"></i> All Jobs
+                <span class="bg-slate-200 text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $allJobs->count() }}</span>
+            </button>
         </div>
-    @endif
+
+        {{-- My Jobs --}}
+        <div x-show="tab === 'my'">
+            @if ($myJobs->isEmpty())
+                <p class="text-slate-400 text-sm py-6 text-center">You have no jobs yet.</p>
+            @else
+                <div class="space-y-2">
+                    @foreach ($myJobs as $job)
+                        @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'class' => 'bg-slate-100 text-slate-500']; @endphp
+                        <div class="bg-white border border-slate-200 rounded-xl px-4 py-3" x-data="{ editNote: false }">
+                            <div class="flex items-start gap-3">
+                                @if ($job->fileUrl())
+                                    @if (str_contains($job->mime_type ?? '', 'pdf'))
+                                        <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-red-400">
+                                            <i class="fa-solid fa-file-pdf text-xl"></i>
+                                        </div>
+                                    @else
+                                        <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                            class="w-12 h-12 flex-shrink-0 rounded-lg object-cover border border-slate-200">
+                                    @endif
+                                @else
+                                    <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                        <i class="fa-solid fa-image text-xl"></i>
+                                    </div>
+                                @endif
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                                        <span class="font-bold text-slate-700 text-sm">#{{ $job->id }}</span>
+                                        <span class="text-xs {{ $st['class'] }} px-2 py-0.5 rounded-full font-semibold">{{ $st['label'] }}</span>
+                                        <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">{{ $job->printStation?->name ?? '—' }}</span>
+                                        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{{ $job->size?->name ?? '—' }}</span>
+                                    </div>
+                                    <div x-show="!editNote" class="flex items-center gap-2">
+                                        <span class="text-sm text-slate-600 truncate">{{ $job->note }}</span>
+                                        <button type="button" @click="editNote = true"
+                                            class="text-sky-500 hover:text-sky-700 text-xs flex-shrink-0">
+                                            <i class="fa-solid fa-pen-to-square"></i> Edit Note
+                                        </button>
+                                    </div>
+                                    <form x-show="editNote" method="POST" action="{{ route('jobs.note.update', $job) }}" class="flex gap-2 mt-1">
+                                        @csrf @method('PATCH')
+                                        <input type="text" name="note" value="{{ $job->note === '-' ? '' : $job->note }}"
+                                            placeholder="Enter note..."
+                                            class="flex-1 rounded border-slate-300 px-2 py-1 text-sm min-w-0">
+                                        <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-3 py-1 rounded font-semibold">Save</button>
+                                        <button type="button" @click="editNote = false" class="text-xs text-slate-400 hover:text-slate-600 px-2">Cancel</button>
+                                    </form>
+                                    <div class="text-xs text-slate-400 mt-0.5">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
+                                </div>
+                                @if ($job->status->value === 'pending')
+                                    <form method="POST" action="{{ route('jobs.destroy', $job) }}"
+                                        onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit"
+                                            class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition flex-shrink-0" title="Delete">
+                                            <i class="fa-solid fa-trash text-sm"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        {{-- All Jobs --}}
+        <div x-show="tab === 'all'">
+            @if ($allJobs->isEmpty())
+                <p class="text-slate-400 text-sm py-6 text-center">No jobs found.</p>
+            @else
+                <div class="space-y-2">
+                    @foreach ($allJobs as $job)
+                        @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'class' => 'bg-slate-100 text-slate-500']; @endphp
+                        <div class="bg-white border border-slate-200 rounded-xl px-4 py-3">
+                            <div class="flex items-start gap-3">
+                                @if ($job->fileUrl())
+                                    @if (str_contains($job->mime_type ?? '', 'pdf'))
+                                        <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-red-400">
+                                            <i class="fa-solid fa-file-pdf text-xl"></i>
+                                        </div>
+                                    @else
+                                        <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                            class="w-12 h-12 flex-shrink-0 rounded-lg object-cover border border-slate-200">
+                                    @endif
+                                @else
+                                    <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
+                                        <i class="fa-solid fa-image text-xl"></i>
+                                    </div>
+                                @endif
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                                        <span class="font-bold text-slate-700 text-sm">#{{ $job->id }}</span>
+                                        <span class="text-xs {{ $st['class'] }} px-2 py-0.5 rounded-full font-semibold">{{ $st['label'] }}</span>
+                                        <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">{{ $job->printStation?->name ?? '—' }}</span>
+                                        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{{ $job->size?->name ?? '—' }}</span>
+                                    </div>
+                                    <div class="text-sm text-slate-600 truncate">{{ $job->note }}</div>
+                                    <div class="text-xs text-slate-400 mt-0.5">
+                                        {{ $job->uploader?->name ?? '—' }} &middot; {{ $job->created_at->format('d/m/Y h:i A') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
 </x-app-layout>
