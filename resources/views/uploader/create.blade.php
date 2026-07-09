@@ -3,6 +3,11 @@
 
     <h2 class="text-2xl font-bold text-slate-900 mb-6">Upload Design & File</h2>
 
+    @if (request('uploaded'))
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i> File uploaded! Sent to Print Station.
+        </div>
+    @endif
     @if (session('status'))
         <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
             <i class="fa-solid fa-circle-check"></i> {{ session('status') }}
@@ -30,7 +35,34 @@
             labels: [{ name: '', pcs: 1 }],
             addLabelRow() { this.labels.push({ name: '', pcs: 1 }) },
             removeLabelRow(i) { if (this.labels.length > 1) this.labels.splice(i, 1) },
-        }">
+            uploading: false,
+            uploadPct: 0,
+            uploadDone: false,
+            submitForm(e) {
+                if (this.needsLamination === null) return;
+                this.uploading = true;
+                this.uploadPct = 0;
+                this.uploadDone = false;
+                const form = e.target.closest('form');
+                const fd = new FormData(form);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', form.action);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.upload.addEventListener('progress', ev => {
+                    if (ev.lengthComputable) this.uploadPct = Math.round(ev.loaded / ev.total * 100);
+                });
+                xhr.addEventListener('load', () => {
+                    this.uploadPct = 100;
+                    this.uploadDone = true;
+                    setTimeout(() => { window.location = '{{ route('uploader.create') }}?uploaded=1'; }, 600);
+                });
+                xhr.addEventListener('error', () => {
+                    this.uploading = false;
+                    alert('Upload failed. Please try again.');
+                });
+                xhr.send(fd);
+            },
+        }" @submit.prevent="submitForm($event)">
             @csrf
 
             <div class="mb-5 bg-slate-100 rounded-lg p-4">
@@ -167,12 +199,33 @@
                 </button>
             </div>
 
+            {{-- Upload progress --}}
+            <div x-show="uploading" class="mb-3">
+                <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                    <span x-show="!uploadDone">Uploading...</span>
+                    <span x-show="uploadDone" class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> Upload complete!</span>
+                    <span x-text="uploadPct + '%'"></span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                    <div class="h-3 rounded-full transition-all duration-200"
+                        :class="uploadDone ? 'bg-emerald-500' : 'bg-teal-500'"
+                        :style="`width: ${uploadPct}%`"></div>
+                </div>
+            </div>
+
             <button type="submit"
-                :disabled="needsLamination === null"
-                :class="needsLamination !== null ? 'bg-emerald-500 hover:bg-emerald-600 cursor-pointer' : 'bg-slate-300 cursor-not-allowed'"
+                :disabled="needsLamination === null || uploading"
+                :class="uploading ? 'bg-slate-400 cursor-not-allowed' : needsLamination !== null ? 'bg-emerald-500 hover:bg-emerald-600 cursor-pointer' : 'bg-slate-300 cursor-not-allowed'"
                 class="w-full text-white font-semibold rounded-lg py-3 flex items-center justify-center gap-2 transition">
-                <span x-text="needsLamination === null ? 'Please select lamination option above' : 'Upload & Send to Print'"></span>
-                <i class="fa-solid fa-paper-plane" x-show="needsLamination !== null"></i>
+                <span x-show="!uploading" x-text="needsLamination === null ? 'Please select lamination option above' : 'Upload & Send to Print'"></span>
+                <i class="fa-solid fa-paper-plane" x-show="needsLamination !== null && !uploading"></i>
+                <span x-show="uploading" class="flex items-center gap-2">
+                    <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    <span x-text="uploadPct + '% uploaded'"></span>
+                </span>
             </button>
         </form>
     </div>

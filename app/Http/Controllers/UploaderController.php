@@ -49,7 +49,7 @@ class UploaderController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'design_file' => ['required', 'file', 'max:51200'],
+            'design_file' => ['required', 'file', 'max:204800'],
             'note' => ['nullable', 'string', 'max:255'],
             'labels' => ['nullable', 'array', 'max:20'],
             'labels.*.name' => ['required_with:labels', 'string', 'max:100'],
