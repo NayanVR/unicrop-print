@@ -106,7 +106,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/jobs/{printJob}/note', [PrintJobController::class, 'updateNote'])->name('jobs.note.update');
     Route::delete('/jobs/{printJob}', [PrintJobController::class, 'destroy'])->name('jobs.destroy');
 
-    Route::middleware('admin')->group(function () {
+    Route::middleware('permission:'.Permission::LABEL_CHECKER)->group(function () {
         Route::get('/label-checker', [LabelCheckerController::class, 'index'])->name('label-checker.index');
         Route::post('/label-checker', [LabelCheckerController::class, 'check'])->name('label-checker.check');
     });

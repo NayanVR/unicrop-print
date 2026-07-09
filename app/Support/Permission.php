@@ -16,6 +16,8 @@ class Permission
 
     public const SYSTEM_SETTINGS = 'system_settings';
 
+    public const LABEL_CHECKER = 'label_checker';
+
     public const ALL = [
         self::UPLOAD_DESIGN => 'Upload Design',
         self::PRINT_STATION => 'Print Station',
@@ -23,5 +25,6 @@ class Permission
         self::DISPATCH => 'Dispatch',
         self::BILLING_LOGS => 'Billing Logs',
         self::SYSTEM_SETTINGS => 'System Settings',
+        self::LABEL_CHECKER => 'Label Checker',
     ];
 }
