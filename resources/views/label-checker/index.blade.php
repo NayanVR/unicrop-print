@@ -54,10 +54,11 @@
                     <i class="fa-solid fa-bottle-water text-teal-500"></i> Bottle Sizes
                     <span class="bg-teal-100 text-teal-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ $bottleSizes->count() }}</span>
                 </h3>
-                <p class="text-xs text-slate-400 mb-4">Add bottle names and their label dimensions.</p>
+                <p class="text-xs text-slate-400 mb-4">Add bottle names and their label dimensions. Organise into groups.</p>
 
                 @if (auth()->user()->isAdmin())
-                    <form method="POST" action="{{ route('settings.bottle-sizes.store') }}" class="mb-4 space-y-2">
+                    {{-- Add bottle form --}}
+                    <form method="POST" action="{{ route('settings.bottle-sizes.store') }}" class="mb-5 space-y-2">
                         @csrf
                         <input type="text" name="name" placeholder="Bottle name (e.g. 100ml Round)"
                             class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
@@ -67,60 +68,100 @@
                             <input type="number" step="0.1" min="1" name="label_height_mm" placeholder="Height mm"
                                 class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
                         </div>
+                        @if ($groups->isNotEmpty())
+                            <select name="group_id" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm text-slate-600">
+                                <option value="">— No group —</option>
+                                @foreach ($groups as $group)
+                                    <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                         <button type="submit"
                             class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold px-4 py-2 rounded-lg text-sm">
                             <i class="fa-solid fa-plus"></i> Add Bottle Size
                         </button>
                     </form>
+
+                    {{-- Group management --}}
+                    <div class="border-t border-slate-100 pt-4 mb-4">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Groups</p>
+                        <form method="POST" action="{{ route('settings.bottle-size-groups.store') }}" class="flex gap-2 mb-3">
+                            @csrf
+                            <input type="text" name="name" placeholder="New group name"
+                                class="flex-1 rounded-lg border-slate-300 px-3 py-1.5 text-sm">
+                            <button type="submit" class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold px-3 py-1.5 rounded-lg">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </form>
+                        @if ($groups->isNotEmpty())
+                            <ul class="space-y-1">
+                                @foreach ($groups as $group)
+                                    <li x-data="{ editing: false }" class="flex items-center gap-1.5">
+                                        <span x-show="!editing" class="flex-1 text-sm text-slate-700 font-medium truncate">{{ $group->name }}</span>
+                                        <form x-show="editing" method="POST" action="{{ route('settings.bottle-size-groups.update', $group) }}" class="flex-1 flex gap-1">
+                                            @csrf @method('PATCH')
+                                            <input type="text" name="name" value="{{ $group->name }}"
+                                                class="flex-1 rounded border-slate-300 px-2 py-1 text-sm">
+                                            <button type="submit" class="bg-teal-600 text-white text-xs px-2 py-1 rounded">Save</button>
+                                            <button type="button" @click="editing = false" class="bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded">✕</button>
+                                        </form>
+                                        <button x-show="!editing" type="button" @click="editing = true"
+                                            class="text-sky-400 hover:text-sky-600 p-1 rounded transition">
+                                            <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                        </button>
+                                        <form x-show="!editing" method="POST" action="{{ route('settings.bottle-size-groups.destroy', $group) }}"
+                                            onsubmit="return confirm('Delete group {{ addslashes($group->name) }}? Bottles in it will become ungrouped.')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="text-red-400 hover:text-red-600 p-1 rounded transition">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                        </form>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="text-xs text-slate-400">No groups yet.</p>
+                        @endif
+                    </div>
                 @endif
 
-                @if ($bottleSizes->isNotEmpty())
-                    <ul class="space-y-1.5">
-                        @foreach ($bottleSizes as $bottle)
-                            <li x-data="{ editing: false }" class="border border-slate-100 bg-slate-50 rounded-lg px-3 py-2">
-                                <div x-show="!editing" class="flex items-center justify-between">
-                                    <div>
-                                        <span class="font-medium text-sm">{{ $bottle->name }}</span>
-                                        <span class="ml-1.5 text-xs text-slate-400">{{ $bottle->label_width_mm }} × {{ $bottle->label_height_mm }} mm</span>
-                                    </div>
-                                    @if (auth()->user()->isAdmin())
-                                        <div class="flex items-center gap-1">
-                                            <button type="button" @click="editing = true"
-                                                class="text-sky-400 hover:text-sky-600 hover:bg-sky-50 p-1.5 rounded transition">
-                                                <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                            </button>
-                                            <form method="POST" action="{{ route('settings.bottle-sizes.destroy', $bottle) }}"
-                                                onsubmit="return confirm('Delete {{ addslashes($bottle->name) }}?')">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition">
-                                                    <i class="fa-solid fa-trash text-xs"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @endif
-                                </div>
-                                @if (auth()->user()->isAdmin())
-                                    <form x-show="editing" method="POST" action="{{ route('settings.bottle-sizes.update', $bottle) }}" class="space-y-1.5">
-                                        @csrf @method('PATCH')
-                                        <input type="text" name="name" value="{{ $bottle->name }}"
-                                            class="w-full rounded border-slate-300 px-2 py-1 text-sm">
-                                        <div class="flex gap-1.5">
-                                            <input type="number" step="0.1" min="1" name="label_width_mm" value="{{ $bottle->label_width_mm }}"
-                                                placeholder="W mm" class="w-full rounded border-slate-300 px-2 py-1 text-sm">
-                                            <input type="number" step="0.1" min="1" name="label_height_mm" value="{{ $bottle->label_height_mm }}"
-                                                placeholder="H mm" class="w-full rounded border-slate-300 px-2 py-1 text-sm">
-                                        </div>
-                                        <div class="flex gap-1.5">
-                                            <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold py-1.5 rounded">Save</button>
-                                            <button type="button" @click="editing = false" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs font-semibold py-1.5 rounded">Cancel</button>
-                                        </div>
-                                    </form>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
+                {{-- Bottles listed by group --}}
+                @php
+                    $ungrouped = $bottleSizes->whereNull('group_id');
+                @endphp
+
+                @if ($bottleSizes->isEmpty())
                     <p class="text-slate-400 text-sm text-center py-4">No bottle sizes added yet.</p>
+                @else
+                    {{-- Grouped bottles --}}
+                    @foreach ($groups as $group)
+                        @if ($group->bottleSizes->isNotEmpty())
+                            <div class="mb-3">
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+                                    <i class="fa-solid fa-layer-group text-slate-400"></i> {{ $group->name }}
+                                </p>
+                                <ul class="space-y-1.5">
+                                    @foreach ($group->bottleSizes as $bottle)
+                                        @include('label-checker._bottle-item', ['bottle' => $bottle, 'groups' => $groups])
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    @endforeach
+
+                    {{-- Ungrouped bottles --}}
+                    @if ($ungrouped->isNotEmpty())
+                        <div class="mb-3">
+                            @if ($groups->isNotEmpty())
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Ungrouped</p>
+                            @endif
+                            <ul class="space-y-1.5">
+                                @foreach ($ungrouped as $bottle)
+                                    @include('label-checker._bottle-item', ['bottle' => $bottle, 'groups' => $groups])
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                 @endif
             </div>
         </div>

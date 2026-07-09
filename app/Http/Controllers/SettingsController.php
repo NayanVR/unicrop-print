@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BottleSize;
+use App\Models\BottleSizeGroup;
 use App\Models\CuttingType;
 use App\Models\LaminationType;
 use App\Models\PrintStation;
@@ -352,36 +353,55 @@ class SettingsController extends Controller
         return redirect()->route('settings.index')->with('status', 'Lamination rates updated.');
     }
 
-    public function updateBottleSize(Request $request, BottleSize $bottleSize): RedirectResponse
+    public function storeBottleSizeGroup(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'label_width_mm' => ['required', 'numeric', 'min:1'],
-            'label_height_mm' => ['required', 'numeric', 'min:1'],
-        ]);
+        $validated = $request->validate(['name' => ['required', 'string', 'max:100']]);
+        BottleSizeGroup::create($validated);
+        return redirect()->route('label-checker.index')->with('status', 'Group added.');
+    }
 
-        $bottleSize->update($validated);
+    public function updateBottleSizeGroup(Request $request, BottleSizeGroup $group): RedirectResponse
+    {
+        $validated = $request->validate(['name' => ['required', 'string', 'max:100']]);
+        $group->update($validated);
+        return redirect()->route('label-checker.index')->with('status', 'Group updated.');
+    }
 
-        return redirect()->route('label-checker.index')->with('status', 'Bottle size updated.');
+    public function destroyBottleSizeGroup(BottleSizeGroup $group): RedirectResponse
+    {
+        $group->delete();
+        return redirect()->route('label-checker.index')->with('status', 'Group deleted.');
     }
 
     public function storeBottleSize(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'group_id' => ['nullable', 'exists:bottle_size_groups,id'],
             'name' => ['required', 'string', 'max:100'],
             'label_width_mm' => ['required', 'numeric', 'min:1'],
             'label_height_mm' => ['required', 'numeric', 'min:1'],
         ]);
 
         BottleSize::create($validated);
+        return redirect()->route('label-checker.index')->with('status', 'Bottle size added.');
+    }
 
-        return redirect()->route('settings.index')->with('status', 'Bottle size added.');
+    public function updateBottleSize(Request $request, BottleSize $bottleSize): RedirectResponse
+    {
+        $validated = $request->validate([
+            'group_id' => ['nullable', 'exists:bottle_size_groups,id'],
+            'name' => ['required', 'string', 'max:100'],
+            'label_width_mm' => ['required', 'numeric', 'min:1'],
+            'label_height_mm' => ['required', 'numeric', 'min:1'],
+        ]);
+
+        $bottleSize->update($validated);
+        return redirect()->route('label-checker.index')->with('status', 'Bottle size updated.');
     }
 
     public function destroyBottleSize(BottleSize $bottleSize): RedirectResponse
     {
         $bottleSize->delete();
-
-        return redirect()->route('settings.index')->with('status', 'Bottle size deleted.');
+        return redirect()->route('label-checker.index')->with('status', 'Bottle size deleted.');
     }
 }

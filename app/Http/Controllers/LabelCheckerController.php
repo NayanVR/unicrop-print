@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BottleSize;
+use App\Models\BottleSizeGroup;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -11,11 +12,17 @@ class LabelCheckerController extends Controller
     private const TOLERANCE_MM = 2.0;
     private const DEFAULT_DPI  = 300;
 
+    private function viewData(): array
+    {
+        return [
+            'groups'      => BottleSizeGroup::orderBy('name')->with('bottleSizes')->get(),
+            'bottleSizes' => BottleSize::orderBy('name')->get(),
+        ];
+    }
+
     public function index(): View
     {
-        return view('label-checker.index', [
-            'bottleSizes' => BottleSize::orderBy('name')->get(),
-        ]);
+        return view('label-checker.index', $this->viewData());
     }
 
     public function check(Request $request): View
@@ -64,10 +71,9 @@ class LabelCheckerController extends Controller
             ];
         }
 
-        return view('label-checker.index', [
-            'bottleSizes' => $bottles,
-            'results'     => $results,
-        ]);
+        return view('label-checker.index', array_merge($this->viewData(), [
+            'results' => $results,
+        ]));
     }
 
     private function detectDpi(string $path, string $mime): float

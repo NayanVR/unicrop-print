@@ -66,8 +66,11 @@ Route::middleware('auth')->group(function () {
         Route::patch('/settings/station-lamination-rates', [SettingsController::class, 'updateStationLaminationRates'])->name('settings.station-lamination-rates.update');
     });
 
-    // Bottle sizes: admin only
+    // Bottle sizes & groups: admin only
     Route::middleware('admin')->group(function () {
+        Route::post('/settings/bottle-size-groups', [SettingsController::class, 'storeBottleSizeGroup'])->name('settings.bottle-size-groups.store');
+        Route::patch('/settings/bottle-size-groups/{group}', [SettingsController::class, 'updateBottleSizeGroup'])->name('settings.bottle-size-groups.update');
+        Route::delete('/settings/bottle-size-groups/{group}', [SettingsController::class, 'destroyBottleSizeGroup'])->name('settings.bottle-size-groups.destroy');
         Route::post('/settings/bottle-sizes', [SettingsController::class, 'storeBottleSize'])->name('settings.bottle-sizes.store');
         Route::patch('/settings/bottle-sizes/{bottleSize}', [SettingsController::class, 'updateBottleSize'])->name('settings.bottle-sizes.update');
         Route::delete('/settings/bottle-sizes/{bottleSize}', [SettingsController::class, 'destroyBottleSize'])->name('settings.bottle-sizes.destroy');
