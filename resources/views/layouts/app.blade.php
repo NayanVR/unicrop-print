@@ -39,6 +39,11 @@
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                         <i class="fa-solid fa-chart-pie w-4"></i> Dashboard
                     </a>
+                    @if (auth()->user()->isAdmin())
+                    <a href="{{ route('label-checker.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('label-checker.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+                        <i class="fa-solid fa-tag w-4"></i> Label Checker
+                    </a>
+                    @endif
                     @if (auth()->user()->hasPermission('upload_design'))
                         <a href="{{ route('uploader.create') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('uploader.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-cloud-arrow-up w-4"></i> Upload Design
@@ -68,11 +73,6 @@
                         <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('settings.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-gear w-4"></i> System Settings
                         </a>
-                    @endif
-                    @if (auth()->user()->isAdmin())
-                    <a href="{{ route('label-checker.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('label-checker.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
-                        <i class="fa-solid fa-tag w-4"></i> Label Checker
-                    </a>
                     @endif
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('users.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
