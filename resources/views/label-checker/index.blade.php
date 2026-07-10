@@ -12,22 +12,22 @@
         <div class="space-y-6">
 
             {{-- Upload form --}}
-            <div class="bg-white border border-slate-200 rounded-xl p-6">
-                <h3 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-tag text-teal-500"></i> Upload Labels
+            <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:22px;">
+                <h3 style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:#111;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-tag style="color:#F05A28;""></i> Upload Labels
                 </h3>
 
                 <form method="POST" action="{{ route('label-checker.check') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3" x-data="{ count: 0 }">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <label style="display:block;font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:6px;">
                             Select Label Images <span class="text-red-500">*</span>
                             <span class="font-normal text-slate-400">(PNG or JPG, up to 50)</span>
                         </label>
                         <input type="file" name="label_files[]" accept=".jpg,.jpeg,.png" multiple required
                             @change="count = $event.target.files.length"
-                            class="w-full text-sm text-slate-600 border border-dashed border-slate-400 rounded-lg bg-slate-50 p-3 cursor-pointer">
-                        <p x-show="count > 0" class="text-xs text-teal-600 mt-1 font-semibold">
+                            style="width:100%;font-size:13px;color:#555;border:2px dashed #E5E5E5;border-radius:9px;background:#FAFAF8;padding:12px;cursor:pointer;">
+                        <p x-show="count > 0" style="font-size:12px;color:#F05A28;margin-top:4px;font-weight:600;">
                             <span x-text="count"></span> file<span x-show="count > 1">s</span> selected
                         </p>
                         @error('label_files')
@@ -37,24 +37,24 @@
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-                    <p class="text-xs text-slate-400 mb-4">
+                    <p style="font-size:12px;color:#A0A0A0;margin-bottom:14px;">
                         <i class="fa-solid fa-circle-info"></i>
                         DPI read from file metadata; defaults to 300 DPI. Tolerance: ±2 mm.
                     </p>
                     <button type="submit"
-                        class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg py-2.5 flex items-center justify-center gap-2 transition">
+                        style="width:100%;background:#F05A28;color:#fff;border:none;padding:10px;border-radius:9px;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
                         <i class="fa-solid fa-magnifying-glass"></i> Check Label Sizes
                     </button>
                 </form>
             </div>
 
             {{-- Bottle size management (admin only) --}}
-            <div class="bg-white border border-teal-200 border-t-4 border-t-teal-500 rounded-xl p-6">
-                <h3 class="font-semibold text-slate-800 mb-1 flex items-center gap-2">
-                    <i class="fa-solid fa-bottle-water text-teal-500"></i> Bottle Sizes
-                    <span class="bg-teal-100 text-teal-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ $bottleSizes->count() }}</span>
+            <div style="background:#fff;border:1.5px solid #E5E5E5;border-top:4px solid #F05A28;border-radius:14px;padding:22px;">
+                <h3 style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:#111;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-bottle-water style="color:#F05A28;""></i> Bottle Sizes
+                    <span style="background:#FFF1EC;color:#F05A28;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;">{{ $bottleSizes->count() }}</span>
                 </h3>
-                <p class="text-xs text-slate-400 mb-4">Add bottle names and their label dimensions. Organise into groups.</p>
+                <p style="font-size:12px;color:#A0A0A0;margin-bottom:14px;">Add bottle names and their label dimensions. Organise into groups.</p>
 
                 @if (auth()->user()->hasPermission('label_checker'))
                     {{-- Add bottle form --}}
@@ -77,19 +77,19 @@
                             </select>
                         @endif
                         <button type="submit"
-                            class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold px-4 py-2 rounded-lg text-sm">
+                            style="width:100%;background:#F05A28;color:#fff;border:none;padding:9px 16px;border-radius:9px;font-weight:600;font-size:13.5px;cursor:pointer;">
                             <i class="fa-solid fa-plus"></i> Add Bottle Size
                         </button>
                     </form>
 
                     {{-- Group management --}}
                     <div class="border-t border-slate-100 pt-4 mb-4">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Groups</p>
+                        <p style="font-size:10.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#A0A0A0;margin-bottom:8px;">Groups</p>
                         <form method="POST" action="{{ route('settings.bottle-size-groups.store') }}" class="flex gap-2 mb-3">
                             @csrf
                             <input type="text" name="name" placeholder="New group name"
                                 class="flex-1 rounded-lg border-slate-300 px-3 py-1.5 text-sm">
-                            <button type="submit" class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold px-3 py-1.5 rounded-lg">
+                            <button type="submit" style="background:#111;color:#fff;border:none;padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
                         </form>
@@ -97,13 +97,13 @@
                             <ul class="space-y-1">
                                 @foreach ($groups as $group)
                                     <li x-data="{ editing: false }" class="flex items-center gap-1.5">
-                                        <span x-show="!editing" class="flex-1 text-sm text-slate-700 font-medium truncate">{{ $group->name }}</span>
+                                        <span x-show="!editing" style="flex:1;font-size:13px;color:#1A1A1A;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $group->name }}</span>
                                         <form x-show="editing" method="POST" action="{{ route('settings.bottle-size-groups.update', $group) }}" class="flex-1 flex gap-1">
                                             @csrf @method('PATCH')
                                             <input type="text" name="name" value="{{ $group->name }}"
                                                 class="flex-1 rounded border-slate-300 px-2 py-1 text-sm">
-                                            <button type="submit" class="bg-teal-600 text-white text-xs px-2 py-1 rounded">Save</button>
-                                            <button type="button" @click="editing = false" class="bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded">✕</button>
+                                            <button type="submit" style="background:#F05A28;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;">Save</button>
+                                            <button type="button" @click="editing = false" style="background:#F0F0EE;color:#555;border:none;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;">✕</button>
                                         </form>
                                         <button x-show="!editing" type="button" @click="editing = true"
                                             class="text-sky-400 hover:text-sky-600 p-1 rounded transition">
@@ -140,13 +140,13 @@
                                 <div class="mb-2">
                                     <button type="button"
                                         @click="active = (active === {{ $group->id }}) ? null : {{ $group->id }}"
-                                        class="w-full flex items-center justify-between gap-1 text-xs font-bold text-slate-500 uppercase tracking-wide mb-1 px-1 py-1 rounded hover:bg-slate-100 transition cursor-pointer">
+                                        style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#717171;margin-bottom:4px;padding:6px 8px;border-radius:7px;cursor:pointer;border:none;background:none;" onmouseover="this.style.background='#F5F5F3'" onmouseout="this.style.background='none'">
                                         <span class="flex items-center gap-1.5">
-                                            <i class="fa-solid fa-layer-group text-slate-400"></i>
+                                            <i class="fa-solid fa-layer-group" style="color:#A0A0A0;"></i>
                                             {{ $group->name }}
-                                            <span class="bg-slate-200 text-slate-600 font-semibold px-1.5 py-0.5 rounded-full text-[10px] normal-case tracking-normal">{{ $group->bottleSizes->count() }}</span>
+                                            <span style="background:#F0F0EE;color:#555;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;">{{ $group->bottleSizes->count() }}</span>
                                         </span>
-                                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"
+                                        <i class="fa-solid fa-chevron-down" style="color:#A0A0A0;" class="transition-transform duration-200"
                                             :class="active === {{ $group->id }} ? 'rotate-180' : ''"></i>
                                     </button>
                                     <ul x-show="active === {{ $group->id }}" x-collapse class="space-y-1.5">
@@ -164,13 +164,13 @@
                                 @if ($groups->isNotEmpty())
                                     <button type="button"
                                         @click="active = (active === 0) ? null : 0"
-                                        class="w-full flex items-center justify-between gap-1 text-xs font-bold text-slate-500 uppercase tracking-wide mb-1 px-1 py-1 rounded hover:bg-slate-100 transition cursor-pointer">
+                                        style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#717171;margin-bottom:4px;padding:6px 8px;border-radius:7px;cursor:pointer;border:none;background:none;" onmouseover="this.style.background='#F5F5F3'" onmouseout="this.style.background='none'">
                                         <span class="flex items-center gap-1.5">
-                                            <i class="fa-solid fa-layer-group text-slate-400"></i>
+                                            <i class="fa-solid fa-layer-group" style="color:#A0A0A0;"></i>
                                             Ungrouped
-                                            <span class="bg-slate-200 text-slate-600 font-semibold px-1.5 py-0.5 rounded-full text-[10px] normal-case tracking-normal">{{ $ungrouped->count() }}</span>
+                                            <span style="background:#F0F0EE;color:#555;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;">{{ $ungrouped->count() }}</span>
                                         </span>
-                                        <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"
+                                        <i class="fa-solid fa-chevron-down" style="color:#A0A0A0;" class="transition-transform duration-200"
                                             :class="active === 0 ? 'rotate-180' : ''"></i>
                                     </button>
                                     <ul x-show="active === 0" x-collapse class="space-y-1.5">
@@ -199,7 +199,7 @@
 
                 {{-- Summary bar --}}
                 <div class="flex flex-wrap gap-3 mb-4">
-                    <div class="bg-slate-800 text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-sm font-semibold">
+                    <div style="background:#111;color:#fff;border-radius:10px;padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;">
                         <i class="fa-solid fa-images"></i> {{ count($results) }} label{{ count($results) > 1 ? 's' : '' }} checked
                     </div>
                     @if ($matched->count())

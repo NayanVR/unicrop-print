@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">System Settings</x-slot>
 
-    <h2 class="text-2xl font-bold text-slate-900 mb-6">System Settings</h2>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:0.06em;color:#111;line-height:1;margin-bottom:24px;">System Settings</h2>
 
     @php $isFullAdmin = auth()->user()->isAdmin(); @endphp
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         @if ($isFullAdmin)
-        <div class="bg-white border-t-4 border-emerald-500 border border-slate-200 rounded-xl p-6">
+        <div class="bg-white border-t-4 border-t-orange-500 border border-gray-200 rounded-xl p-6">
             <h3 class="font-semibold mb-5 flex items-center gap-2"><i class="fa-solid fa-expand"></i> Manage Print Sizes & Rates</h3>
 
             <form method="POST" action="{{ route('settings.sizes.store') }}" class="flex gap-3 items-end mb-6">
@@ -20,17 +20,17 @@
                     <label class="block text-sm font-semibold mb-1">Rate (Rs)</label>
                     <input type="number" name="rate" step="0.01" min="1" placeholder="e.g., 25" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
                 </div>
-                <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg h-[42px]">Add Size</button>
+                <button type="submit" style="background:#F05A28;color:#fff;border:none;padding:0 16px;height:42px;border-radius:8px;font-weight:600;font-size:13.5px;cursor:pointer;">Add Size</button>
             </form>
 
             <ul class="space-y-2">
                 @foreach ($sizes as $size)
-                    <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
+                    <li style="display:flex;align-items:center;justify-content:space-between;border:1.5px solid #E5E5E5;background:#FAFAF8;border-radius:9px;padding:10px 12px;">
                         <div>
                             <strong>{{ $size->name }}</strong>
                             <span class="text-sky-600 font-bold ml-2">[ {{ $size->rate }} Rs/sht ]</span>
                             @if ($size->is_default)
-                                <span class="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">DEFAULT</span>
+                                <span style="background:#F05A28;color:#fff;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;letter-spacing:0.04em;">DEFAULT</span>
                             @endif
                         </div>
                         <div class="flex items-center gap-2">
@@ -58,7 +58,7 @@
                                         <input type="number" name="rate" step="0.01" min="1" value="{{ $size->rate }}" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm">
                                     </div>
                                     <div class="flex justify-end gap-2 pt-2">
-                                        <button type="button" onclick="document.getElementById('edit-size-{{ $size->id }}').close()" class="bg-slate-200 text-slate-700 text-xs px-3 py-2 rounded">Cancel</button>
+                                        <button type="button" onclick="document.getElementById('edit-size-{{ $size->id }}').close()" style="background:#F0F0EE;color:#555;border:none;padding:6px 12px;border-radius:6px;font-size:12.5px;cursor:pointer;">Cancel</button>
                                         <button type="submit" class="bg-amber-500 text-white text-xs px-3 py-2 rounded">Update</button>
                                     </div>
                                 </form>
@@ -74,9 +74,9 @@
             </ul>
         </div>
 
-        <div class="bg-white border-t-4 border-purple-500 border border-slate-200 rounded-xl p-6 self-start">
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-top:4px solid #111;border-radius:14px;padding:22px;align-self:start;">
             <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-scissors"></i> Cutting Types</h3>
-            <p class="text-sm text-slate-500 mb-4">Manage cutting types. Rates are set per station below.</p>
+            <p style="font-size:13px;color:#717171;margin-bottom:14px;">Manage cutting types. Rates are set per station below.</p>
 
             @if (auth()->user()->isAdmin())
                 <form method="POST" action="{{ route('settings.cutting-types.store') }}" class="flex gap-3 items-end mb-4">
@@ -91,7 +91,7 @@
 
             <ul class="space-y-2">
                 @foreach ($cuttingTypes as $type)
-                    <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
+                    <li style="display:flex;align-items:center;justify-content:space-between;border:1.5px solid #E5E5E5;background:#FAFAF8;border-radius:9px;padding:10px 12px;">
                         <div>
                             <strong>{{ $type->name }}</strong>
                             @if ($type->is_default)
@@ -119,9 +119,9 @@
             </ul>
         </div>
 
-        <div class="bg-white border-t-4 border-sky-500 border border-slate-200 rounded-xl p-6 self-start lg:col-span-1">
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-top:4px solid #F05A28;border-radius:14px;padding:22px;align-self:start;">
             <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-print"></i> Print Stations</h3>
-            <p class="text-sm text-slate-500 mb-4">Manage stations and the default selected on the upload form.</p>
+            <p style="font-size:13px;color:#717171;margin-bottom:14px;">Manage stations and the default selected on the upload form.</p>
 
             @if (auth()->user()->isAdmin())
                 <form method="POST" action="{{ route('settings.stations.store') }}" class="flex gap-3 items-end mb-4">
@@ -136,21 +136,21 @@
 
             <ul class="space-y-2">
                 @foreach ($stations as $station)
-                    <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
+                    <li style="display:flex;align-items:center;justify-content:space-between;border:1.5px solid #E5E5E5;background:#FAFAF8;border-radius:9px;padding:10px 12px;">
                         <div>
                             <strong>{{ $station->name }}</strong>
                             @if ($station->is_default)
                                 <span class="bg-sky-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">DEFAULT</span>
                             @endif
                             @if (! $station->requires_cutting)
-                                <span class="bg-slate-400 text-white text-[10px] px-1.5 py-0.5 rounded ml-2">NO CUTTING</span>
+                                <span style="background:#717171;color:#fff;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:6px;">NO CUTTING</span>
                             @endif
                         </div>
                         <div class="flex items-center gap-2">
                             <form method="POST" action="{{ route('settings.stations.cutting', $station) }}">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="bg-slate-500 hover:bg-slate-600 text-white text-xs px-3 py-1.5 rounded">
+                                <button type="submit" style="background:#111;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
                                     {{ $station->requires_cutting ? 'Disable Cutting' : 'Enable Cutting' }}
                                 </button>
                             </form>
@@ -182,9 +182,9 @@
             </div>
         @endif
 
-        <div class="bg-white border-t-4 border-amber-500 border border-slate-200 rounded-xl p-6 lg:col-span-2">
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-top:4px solid #F05A28;border-radius:14px;padding:22px;">
             <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-table-cells"></i> Rate Per Station & Size</h3>
-            <p class="text-sm text-slate-500 mb-4">Each print station can charge a different rate for the same sheet size.</p>
+            <p style="font-size:13px;color:#717171;margin-bottom:14px;">Each print station can charge a different rate for the same sheet size.</p>
 
             <form method="POST" action="{{ route('settings.station-rates.update') }}">
                 @csrf
@@ -223,9 +223,9 @@
             </form>
         </div>
 
-        <div class="bg-white border-t-4 border-purple-500 border border-slate-200 rounded-xl p-6 lg:col-span-2">
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-top:4px solid #111;border-radius:14px;padding:22px;">
             <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-table-cells"></i> Cutting Rate Per Station & Type</h3>
-            <p class="text-sm text-slate-500 mb-4">Each print station can charge a different rate for each cutting type.</p>
+            <p style="font-size:13px;color:#717171;margin-bottom:14px;">Each print station can charge a different rate for each cutting type.</p>
 
             <form method="POST" action="{{ route('settings.station-cutting-rates.update') }}">
                 @csrf
@@ -264,9 +264,9 @@
             </form>
         </div>
 
-        <div class="bg-white border-t-4 border-indigo-500 border border-slate-200 rounded-xl p-6 self-start">
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-top:4px solid #111;border-radius:14px;padding:22px;align-self:start;">
             <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Lamination Types</h3>
-            <p class="text-sm text-slate-500 mb-4">Manage lamination types. Rates are set per station below.</p>
+            <p style="font-size:13px;color:#717171;margin-bottom:14px;">Manage lamination types. Rates are set per station below.</p>
 
             @if (auth()->user()->isAdmin())
                 <form method="POST" action="{{ route('settings.lamination-types.store') }}" class="flex gap-3 items-end mb-4">
@@ -281,7 +281,7 @@
 
             <ul class="space-y-2">
                 @foreach ($laminationTypes as $type)
-                    <li class="flex items-center justify-between border border-slate-200 bg-slate-50 rounded-lg p-3">
+                    <li style="display:flex;align-items:center;justify-content:space-between;border:1.5px solid #E5E5E5;background:#FAFAF8;border-radius:9px;padding:10px 12px;">
                         <div>
                             <strong>{{ $type->name }}</strong>
                             @if ($type->is_default)
@@ -309,9 +309,9 @@
             </ul>
         </div>
 
-        <div class="bg-white border-t-4 border-indigo-500 border border-slate-200 rounded-xl p-6 lg:col-span-2">
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-top:4px solid #111;border-radius:14px;padding:22px;">
             <h3 class="font-semibold mb-2 flex items-center gap-2"><i class="fa-solid fa-table-cells"></i> Lamination Rate Per Station & Type</h3>
-            <p class="text-sm text-slate-500 mb-4">Each print station can charge a different rate for each lamination type (per sheet).</p>
+            <p style="font-size:13px;color:#717171;margin-bottom:14px;">Each print station can charge a different rate for each lamination type (per sheet).</p>
 
             <form method="POST" action="{{ route('settings.station-lamination-rates.update') }}">
                 @csrf

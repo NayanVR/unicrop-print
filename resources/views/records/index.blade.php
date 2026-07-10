@@ -267,7 +267,7 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <strong>{{ $job->note ?: '—' }}</strong><br>
-                                        <span class="text-xs text-slate-400">{{ $job->file_name }}</span>
+                                        <span style="font-size:12px;color:#A0A0A0;">{{ $job->file_name }}</span>
                                     </td>
                                     <td class="px-4 py-3 text-xs text-sky-600 whitespace-nowrap">
                                         {{ $job->sheets }} × {{ $job->rate }}<br>

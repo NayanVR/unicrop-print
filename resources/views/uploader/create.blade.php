@@ -1,25 +1,28 @@
 <x-app-layout>
     <x-slot name="header">Upload Design & File</x-slot>
 
-    <h2 class="text-2xl font-bold text-slate-900 mb-6">Upload Design & File</h2>
+    <div class="mb-8">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:0.06em;color:#111;line-height:1;">Upload Design</h2>
+        <p style="font-size:13px;color:#717171;margin-top:4px;">Send a file directly to a print station.</p>
+    </div>
 
     @if (request('uploaded'))
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+        <div style="background:#F0FDF4;border:1.5px solid #BBF7D0;color:#15803D;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13.5px;display:flex;align-items:center;gap:8px;">
             <i class="fa-solid fa-circle-check"></i> File uploaded! Sent to Print Station.
         </div>
     @endif
     @if (session('status'))
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+        <div style="background:#F0FDF4;border:1.5px solid #BBF7D0;color:#15803D;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13.5px;display:flex;align-items:center;gap:8px;">
             <i class="fa-solid fa-circle-check"></i> {{ session('status') }}
         </div>
     @endif
     @if (session('error'))
-        <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+        <div style="background:#FFF0F0;border:1.5px solid #FECACA;color:#B91C1C;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13.5px;display:flex;align-items:center;gap:8px;">
             <i class="fa-solid fa-circle-xmark"></i> {{ session('error') }}
         </div>
     @endif
 
-    <div class="bg-white border border-slate-200 rounded-xl p-6 max-w-xl">
+    <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:28px;max-width:520px;">
         <form method="POST" action="{{ route('uploader.store') }}" enctype="multipart/form-data" x-data="{
             rates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->size_id => (float) $r->rate])])->toJson() }},
             cuttingRates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationCuttingRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->cutting_type_id => (float) $r->rate])])->toJson() }},
@@ -51,13 +54,12 @@
                 this.uploadDone = false;
                 this.uploadError = '';
 
-                const CHUNK_SIZE = 512 * 1024; // 512KB — safely under nginx 1MB client_max_body_size
+                const CHUNK_SIZE = 512 * 1024;
                 const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
                 const uploadId = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
                 const csrfToken = form.querySelector('[name=_token]').value;
                 const chunkUrl = '{{ route('uploader.chunk') }}';
 
-                // Collect all non-file form fields
                 const formData = new FormData(form);
                 const fields = {};
                 for (const [k, v] of formData.entries()) {
@@ -76,10 +78,8 @@
                     fd.append('chunk', chunk, file.name);
                     fd.append('original_name', file.name);
 
-                    // Send form fields with last chunk
                     if (i === totalChunks - 1) {
                         for (const [k, v] of Object.entries(fields)) fd.append(k, v);
-                        // labels array
                         this.labels.forEach((row, li) => {
                             fd.append(`labels[${li}][name]`, row.name);
                             fd.append(`labels[${li}][pcs]`, row.pcs);
@@ -95,10 +95,8 @@
                                 try { resolve(JSON.parse(xhr.responseText)); }
                                 catch (e) { reject(new Error('Invalid server response')); }
                             } else if ((xhr.status === 502 || xhr.status === 504) && attempt < 3) {
-                                // Gateway error — retry after short delay
                                 setTimeout(() => sendChunk(attempt + 1).then(resolve).catch(reject), 1500 * attempt);
                             } else {
-                                // Strip HTML from error response (e.g. nginx error pages)
                                 const tmp = document.createElement('div');
                                 tmp.innerHTML = xhr.responseText;
                                 const text = tmp.textContent.trim().replace(/\s+/g, ' ').substring(0, 120);
@@ -111,9 +109,7 @@
 
                     try {
                         const res = await sendChunk(1);
-
                         this.uploadPct = Math.round(((i + 1) / totalChunks) * 100);
-
                         if (res.status === 'done') {
                             this.uploadDone = true;
                             setTimeout(() => { window.location = '{{ route('uploader.create') }}?uploaded=1'; }, 700);
@@ -129,109 +125,119 @@
         }" @submit.prevent="submitForm($event)">
             @csrf
 
-            <div class="mb-5 bg-slate-100 rounded-lg p-4">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
-                    <i class="fa-solid fa-paperclip"></i> Select Design File <span class="text-red-500">*</span>
+            {{-- File input --}}
+            <div style="margin-bottom:18px;">
+                <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:8px;">
+                    <i class="fa-solid fa-paperclip"></i> Design File <span style="color:#EF4444;">*</span>
                 </label>
                 <input type="file" name="design_file" required
-                    class="w-full text-sm text-slate-600 border border-dashed border-slate-400 rounded-lg bg-slate-50 p-2 cursor-pointer">
+                    style="width:100%;font-size:13px;color:#555;border:2px dashed #D5D5D5;border-radius:10px;background:#FAFAF8;padding:12px 14px;cursor:pointer;outline:none;">
             </div>
 
-            <div class="mb-5">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Note (Optional)</label>
-                <input type="text" name="note" placeholder="e.g., Urgent Print, Customer Name, etc..."
-                    class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+            {{-- Note --}}
+            <div style="margin-bottom:18px;">
+                <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:8px;">Note (Optional)</label>
+                <input type="text" name="note" placeholder="e.g., Urgent Print, Customer Name..."
+                    style="width:100%;border:1.5px solid #E5E5E5;border-radius:10px;padding:11px 14px;font-size:13.5px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
             </div>
 
-            <div class="mb-5">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Print Station <span class="text-red-500">*</span></label>
-                <select name="print_station_id" x-model="stationId" required class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+            {{-- Print Station --}}
+            <div style="margin-bottom:18px;">
+                <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:8px;">Print Station <span style="color:#EF4444;">*</span></label>
+                <select name="print_station_id" x-model="stationId" required
+                    style="width:100%;border:1.5px solid #E5E5E5;border-radius:10px;padding:11px 14px;font-size:13.5px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
                     @foreach ($stations as $station)
                         <option value="{{ $station->id }}" @selected($station->is_default)>{{ $station->name }}</option>
                     @endforeach
                 </select>
             </div>
 
-            <div class="mb-5">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Select Size</label>
-                <select name="size_id" x-model="sizeId" class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+            {{-- Size --}}
+            <div style="margin-bottom:18px;">
+                <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:8px;">Size</label>
+                <select name="size_id" x-model="sizeId"
+                    style="width:100%;border:1.5px solid #E5E5E5;border-radius:10px;padding:11px 14px;font-size:13.5px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
                     @foreach ($sizes as $size)
                         <option value="{{ $size->id }}" @selected($size->is_default)>{{ $size->name }}</option>
                     @endforeach
                 </select>
             </div>
 
-            <div class="mb-5">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Number of Copies / Sheets <span class="text-red-500">*</span></label>
+            {{-- Sheets --}}
+            <div style="margin-bottom:18px;">
+                <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:8px;">Copies / Sheets <span style="color:#EF4444;">*</span></label>
                 <input type="number" name="sheets" min="1" value="1" required x-model.number="sheetsCount"
-                    class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                    style="width:100%;border:1.5px solid #E5E5E5;border-radius:10px;padding:11px 14px;font-size:13.5px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
             </div>
 
-            <div class="mb-5 text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
-                <i class="fa-solid fa-tags"></i> Size Rate: <span x-text="rates[stationId]?.[sizeId]"></span> Rs / sheet
+            {{-- Rate badge --}}
+            <div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;font-weight:700;color:#C2410C;display:flex;align-items:center;gap:8px;">
+                <i class="fa-solid fa-tags"></i>
+                Size Rate: <span x-text="rates[stationId]?.[sizeId]"></span> Rs / sheet
             </div>
 
-            <div class="mb-5" x-show="stationsRequireCutting[stationId]">
-                <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
-                    <input type="checkbox" name="needs_cutting" value="1" x-model="needsCutting">
+            {{-- Cutting --}}
+            <div style="margin-bottom:18px;" x-show="stationsRequireCutting[stationId]">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#333;margin-bottom:10px;cursor:pointer;">
+                    <input type="checkbox" name="needs_cutting" value="1" x-model="needsCutting" style="accent-color:#F05A28;width:15px;height:15px;">
                     Needs Cutting?
                 </label>
-
                 <div x-show="needsCutting">
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Cutting Type</label>
-                    <select name="cutting_type_id" x-model="cuttingTypeId" class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                    <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:8px;">Cutting Type</label>
+                    <select name="cutting_type_id" x-model="cuttingTypeId"
+                        style="width:100%;border:1.5px solid #E5E5E5;border-radius:10px;padding:11px 14px;font-size:13.5px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
                         @foreach ($cuttingTypes as $type)
                             <option value="{{ $type->id }}" @selected($type->is_default)>{{ $type->name }}</option>
                         @endforeach
                     </select>
-                    <div class="mt-3 text-sm font-bold text-purple-700 bg-purple-50 border border-purple-200 rounded-lg px-4 py-3">
-                        <i class="fa-solid fa-scissors"></i> Cutting Rate: <span x-text="cuttingRates[stationId]?.[cuttingTypeId]"></span> Rs / cut
+                    <div style="background:#FAF5FF;border:1.5px solid #E9D5FF;border-radius:10px;padding:12px 16px;margin-top:10px;font-size:13px;font-weight:700;color:#7E22CE;display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-scissors"></i>
+                        Cutting Rate: <span x-text="cuttingRates[stationId]?.[cuttingTypeId]"></span> Rs / cut
                     </div>
                 </div>
             </div>
 
             {{-- Lamination --}}
-            <div class="mb-5">
-                <label class="block text-sm font-semibold text-slate-700 mb-3">
-                    <i class="fa-solid fa-layer-group text-indigo-500"></i> Lamination Required? <span class="text-red-500">*</span>
+            <div style="margin-bottom:18px;">
+                <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:10px;">
+                    <i class="fa-solid fa-layer-group"></i> Lamination Required? <span style="color:#EF4444;">*</span>
                 </label>
-                <div class="flex gap-3">
+                <div style="display:flex;gap:10px;">
                     <button type="button" @click="needsLamination = false"
-                        :class="needsLamination === false ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'"
-                        class="flex-1 border-2 rounded-lg py-2.5 text-sm font-semibold transition flex items-center justify-center gap-2">
+                        :style="needsLamination === false ? 'background:#111;color:#fff;border-color:#111;' : 'background:#fff;color:#555;border-color:#E5E5E5;'"
+                        style="flex:1;border:2px solid;border-radius:10px;padding:11px;font-size:13px;font-weight:700;font-family:\'DM Sans\',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.15s;">
                         <i class="fa-solid fa-xmark"></i> No Lamination
                     </button>
                     <button type="button" @click="needsLamination = true"
-                        :class="needsLamination === true ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'"
-                        class="flex-1 border-2 rounded-lg py-2.5 text-sm font-semibold transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-layer-group"></i> Yes, Lamination
+                        :style="needsLamination === true ? 'background:#F05A28;color:#fff;border-color:#F05A28;' : 'background:#fff;color:#555;border-color:#E5E5E5;'"
+                        style="flex:1;border:2px solid;border-radius:10px;padding:11px;font-size:13px;font-weight:700;font-family:\'DM Sans\',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.15s;">
+                        <i class="fa-solid fa-layer-group"></i> Yes, Laminate
                     </button>
                 </div>
                 <input type="hidden" name="needs_lamination" :value="needsLamination === true ? '1' : '0'">
 
-                <div x-show="needsLamination === true" x-transition class="mt-4 space-y-3">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Lamination Type</label>
-                        <select name="lamination_type_id" x-model="laminationTypeId" class="w-full rounded-lg border-slate-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            @foreach ($laminationTypes as $type)
-                                <option value="{{ $type->id }}" @selected($type->is_default)>{{ $type->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3">
-                        <i class="fa-solid fa-layer-group"></i> Lamination Rate: <span x-text="laminationRates[stationId]?.[laminationTypeId] ?? 0"></span> Rs / sheet
+                <div x-show="needsLamination === true" x-transition style="margin-top:14px;">
+                    <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:8px;">Lamination Type</label>
+                    <select name="lamination_type_id" x-model="laminationTypeId"
+                        style="width:100%;border:1.5px solid #E5E5E5;border-radius:10px;padding:11px 14px;font-size:13.5px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
+                        @foreach ($laminationTypes as $type)
+                            <option value="{{ $type->id }}" @selected($type->is_default)>{{ $type->name }}</option>
+                        @endforeach
+                    </select>
+                    <div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 16px;margin-top:10px;font-size:13px;font-weight:700;color:#C2410C;display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-layer-group"></i>
+                        Lamination Rate: <span x-text="laminationRates[stationId]?.[laminationTypeId] ?? 0"></span> Rs / sheet
                     </div>
                 </div>
             </div>
 
-            {{-- Label contents --}}
-            <div class="mb-5">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
-                    <i class="fa-solid fa-tags text-teal-600"></i> Sheet Contents (Optional)
+            {{-- Sheet contents / labels --}}
+            <div style="margin-bottom:18px;">
+                <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:6px;">
+                    <i class="fa-solid fa-tags"></i> Sheet Contents (Optional)
                 </label>
-                <p class="text-xs text-slate-400 mb-3">Sheet ma ketla label che ane ketla pcs — system total calculate karse.</p>
+                <p style="font-size:12px;color:#A0A0A0;margin-bottom:12px;">Sheet ma ketla label che ane ketla pcs.</p>
 
-                {{-- Datalist for autocomplete --}}
                 <datalist id="label-suggestions">
                     @foreach ($labelSuggestions as $s)
                         <option value="{{ $s }}">
@@ -239,44 +245,42 @@
                 </datalist>
 
                 <template x-for="(row, i) in labels" :key="i">
-                    <div class="flex gap-2 mb-2 items-center">
+                    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
                         <input type="text" :name="`labels[${i}][name]`" x-model="row.name"
                             list="label-suggestions"
                             placeholder="Label name (e.g. Ultra Gold 1ltr)"
-                            class="flex-1 rounded-lg border-slate-300 px-3 py-2 text-sm">
+                            style="flex:1;border:1.5px solid #E5E5E5;border-radius:9px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
                         <input type="number" :name="`labels[${i}][pcs]`" x-model.number="row.pcs" min="1"
                             placeholder="Pcs"
-                            class="w-20 rounded-lg border-slate-300 px-3 py-2 text-sm text-center">
-                        <span class="text-xs text-slate-400 font-semibold whitespace-nowrap">
-                            × <span x-text="sheetsCount"></span> = <span class="text-teal-700 font-bold" x-text="(parseInt(row.pcs) || 0) * sheetsCount"></span>
+                            style="width:70px;border:1.5px solid #E5E5E5;border-radius:9px;padding:9px 8px;font-size:13px;text-align:center;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
+                        <span style="font-size:12px;color:#A0A0A0;font-weight:600;white-space:nowrap;">
+                            × <span x-text="sheetsCount"></span> = <span style="color:#F05A28;font-weight:700;" x-text="(parseInt(row.pcs) || 0) * sheetsCount"></span>
                         </span>
                         <button type="button" @click="removeLabelRow(i)" x-show="labels.length > 1"
-                            class="text-red-400 hover:text-red-600 p-1 rounded transition">
+                            style="background:none;border:none;color:#EF4444;cursor:pointer;padding:6px;border-radius:6px;font-size:14px;">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
                 </template>
 
                 <button type="button" @click="addLabelRow()"
-                    class="mt-1 text-teal-600 hover:text-teal-800 text-sm font-semibold flex items-center gap-1">
+                    style="background:none;border:none;color:#F05A28;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;margin-top:4px;">
                     <i class="fa-solid fa-plus"></i> Add another label
                 </button>
             </div>
 
-            {{-- Upload error (shown even after uploading stops) --}}
-            <div x-show="uploadError" class="mb-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2">
-                <i class="fa-solid fa-circle-xmark text-red-500 mt-0.5"></i>
+            {{-- Upload error --}}
+            <div x-show="uploadError" style="background:#FFF0F0;border:1.5px solid #FECACA;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;">
+                <i class="fa-solid fa-circle-xmark" style="color:#EF4444;margin-top:2px;"></i>
                 <div>
-                    <p class="text-red-700 text-sm font-semibold" x-text="uploadError"></p>
-                    <button type="button" @click="uploadError=''; uploading=false;" class="text-xs text-red-500 underline mt-0.5">Try again</button>
+                    <p style="color:#B91C1C;font-size:13px;font-weight:600;" x-text="uploadError"></p>
+                    <button type="button" @click="uploadError=''; uploading=false;" style="background:none;border:none;font-size:12px;color:#EF4444;text-decoration:underline;cursor:pointer;padding:0;margin-top:4px;">Try again</button>
                 </div>
             </div>
 
             {{-- Upload progress --}}
-            <div x-show="uploading && !uploadError" class="mb-3">
-
-                {{-- Dancing emoji --}}
-                <div x-show="!uploadDone" class="flex flex-col items-center py-4">
+            <div x-show="uploading && !uploadError" style="margin-bottom:14px;">
+                <div x-show="!uploadDone" style="display:flex;flex-direction:column;align-items:center;padding:20px 0;">
                     <style>
                         @keyframes dance {
                             0%   { transform: rotate(-15deg) translateY(0px) scale(1); }
@@ -297,35 +301,34 @@
                     </style>
                     <span class="dancer">🕺</span>
                     <div class="dancer-shadow"></div>
-                    <p class="text-xs text-slate-400 mt-3 font-medium animate-pulse">Uploading your file... hang tight!</p>
+                    <p style="font-size:12px;color:#A0A0A0;margin-top:12px;font-weight:500;">Uploading your file... hang tight!</p>
                 </div>
-
-                {{-- Done state --}}
-                <div x-show="uploadDone" class="flex flex-col items-center py-3">
-                    <span style="font-size:3rem">🎉</span>
-                    <p class="text-xs text-emerald-600 font-bold mt-1">Upload complete!</p>
+                <div x-show="uploadDone" style="display:flex;flex-direction:column;align-items:center;padding:12px 0;">
+                    <span style="font-size:3rem;">🎉</span>
+                    <p style="font-size:12px;color:#15803D;font-weight:700;margin-top:4px;">Upload complete!</p>
                 </div>
-
-                <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#777;margin-bottom:6px;">
                     <span x-text="uploadPct + '% uploaded'"></span>
                 </div>
-                <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                    <div class="h-3 rounded-full transition-all duration-200"
-                        :class="uploadDone ? 'bg-emerald-500' : 'bg-teal-500'"
-                        :style="`width: ${uploadPct}%`"></div>
+                <div style="width:100%;background:#F0F0EE;border-radius:999px;height:10px;overflow:hidden;">
+                    <div style="height:10px;border-radius:999px;transition:width 0.2s;"
+                        :style="`width: ${uploadPct}%; background: ${uploadDone ? '#22C55E' : '#F05A28'}`"></div>
                 </div>
             </div>
 
+            {{-- Submit --}}
             <button type="submit"
                 :disabled="needsLamination === null || uploading"
-                :class="uploading ? 'bg-slate-400 cursor-not-allowed' : needsLamination !== null ? 'bg-emerald-500 hover:bg-emerald-600 cursor-pointer' : 'bg-slate-300 cursor-not-allowed'"
-                class="w-full text-white font-semibold rounded-lg py-3 flex items-center justify-center gap-2 transition">
-                <span x-show="!uploading" x-text="needsLamination === null ? 'Please select lamination option above' : 'Upload & Send to Print'"></span>
+                :style="uploading ? 'background:#D0D0D0;cursor:not-allowed;' : needsLamination !== null ? 'background:#111;cursor:pointer;' : 'background:#D0D0D0;cursor:not-allowed;'"
+                style="width:100%;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s;"
+                onmouseover="if(this.style.background!='rgb(208, 208, 208)') this.style.background='#F05A28'"
+                onmouseout="if(this.style.background!='rgb(208, 208, 208)') this.style.background='#111'">
+                <span x-show="!uploading" x-text="needsLamination === null ? 'Select lamination option above' : 'Upload & Send to Print'"></span>
                 <i class="fa-solid fa-paper-plane" x-show="needsLamination !== null && !uploading"></i>
-                <span x-show="uploading" class="flex items-center gap-2">
-                    <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                <span x-show="uploading" style="display:flex;align-items:center;gap:8px;">
+                    <svg style="animation:spin 1s linear infinite;width:16px;height:16px;" fill="none" viewBox="0 0 24 24">
+                        <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
                     <span x-text="uploadPct + '% uploaded'"></span>
                 </span>
@@ -335,17 +338,19 @@
 
     {{-- Today's label summary --}}
     @if ($dailySummary->isNotEmpty())
-        <div class="mt-8 max-w-xl bg-teal-50 border border-teal-200 rounded-xl p-5">
-            <h3 class="text-sm font-bold text-teal-800 mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-chart-bar text-teal-600"></i>
-                Today's Label Summary
-                <span class="text-xs font-normal text-teal-600">({{ today()->format('d/m/Y') }})</span>
-            </h3>
-            <div class="space-y-1.5">
+        <div style="margin-top:32px;max-width:520px;background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:22px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                <div style="width:32px;height:32px;background:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-chart-bar" style="color:#F05A28;font-size:13px;"></i>
+                </div>
+                <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:#111;">Today's Label Summary</span>
+                <span style="font-size:12px;color:#A0A0A0;">({{ today()->format('d/m/Y') }})</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
                 @foreach ($dailySummary as $row)
-                    <div class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-teal-100">
-                        <span class="text-sm text-slate-700 font-medium">{{ $row->label_name }}</span>
-                        <span class="text-sm font-bold text-teal-700">{{ number_format($row->total_pcs) }} pcs</span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;background:#FAFAF8;border:1px solid #E5E5E5;border-radius:9px;padding:10px 14px;">
+                        <span style="font-size:13px;color:#333;font-weight:500;">{{ $row->label_name }}</span>
+                        <span style="font-size:13px;font-weight:700;color:#F05A28;">{{ number_format($row->total_pcs) }} pcs</span>
                     </div>
                 @endforeach
             </div>
@@ -355,94 +360,93 @@
     {{-- Jobs tabs --}}
     @php
         $statusConfig = [
-            'pending'   => ['label' => 'Pending',   'class' => 'bg-amber-100 text-amber-700'],
-            'cutting'   => ['label' => 'Cutting',   'class' => 'bg-purple-100 text-purple-700'],
-            'dispatch'  => ['label' => 'Dispatch',  'class' => 'bg-sky-100 text-sky-700'],
-            'completed' => ['label' => 'Completed', 'class' => 'bg-emerald-100 text-emerald-700'],
+            'pending'   => ['label' => 'Pending',   'bg' => '#FFF7ED', 'color' => '#C2410C'],
+            'cutting'   => ['label' => 'Cutting',   'bg' => '#FAF5FF', 'color' => '#7E22CE'],
+            'dispatch'  => ['label' => 'Dispatch',  'bg' => '#F0F9FF', 'color' => '#0369A1'],
+            'completed' => ['label' => 'Completed', 'bg' => '#F0FDF4', 'color' => '#15803D'],
         ];
     @endphp
-    <div class="mt-8 max-w-xl" x-data="{ tab: 'my' }">
+    <div style="margin-top:32px;max-width:520px;" x-data="{ tab: 'my' }">
         {{-- Tab buttons --}}
-        <div class="flex gap-1 mb-4 bg-slate-100 rounded-xl p-1 w-fit">
+        <div style="display:flex;gap:6px;margin-bottom:16px;background:#F5F5F3;border-radius:12px;padding:5px;width:fit-content;">
             <button type="button" @click="tab = 'my'"
-                :class="tab === 'my' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'"
-                class="px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                :style="tab === 'my' ? 'background:#111;color:#fff;' : 'background:transparent;color:#717171;'"
+                style="padding:8px 18px;border-radius:9px;border:none;font-size:13px;font-weight:700;font-family:\'DM Sans\',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 0.15s;">
                 <i class="fa-solid fa-user"></i> My Jobs
-                <span class="bg-slate-200 text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $myJobs->count() }}</span>
+                <span style="background:rgba(255,255,255,0.2);border-radius:999px;padding:1px 7px;font-size:11px;">{{ $myJobs->count() }}</span>
             </button>
             <button type="button" @click="tab = 'all'"
-                :class="tab === 'all' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'"
-                class="px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                :style="tab === 'all' ? 'background:#111;color:#fff;' : 'background:transparent;color:#717171;'"
+                style="padding:8px 18px;border-radius:9px;border:none;font-size:13px;font-weight:700;font-family:\'DM Sans\',sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 0.15s;">
                 <i class="fa-solid fa-list"></i> All Jobs
-                <span class="bg-slate-200 text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded-full">{{ $allJobs->count() }}</span>
+                <span style="background:rgba(255,255,255,0.2);border-radius:999px;padding:1px 7px;font-size:11px;">{{ $allJobs->count() }}</span>
             </button>
         </div>
 
         {{-- My Jobs --}}
         <div x-show="tab === 'my'">
             @if ($myJobs->isEmpty())
-                <p class="text-slate-400 text-sm py-6 text-center">You have no jobs yet.</p>
+                <p style="color:#A0A0A0;font-size:13.5px;text-align:center;padding:32px 0;">You have no jobs yet.</p>
             @else
-                <div class="space-y-2">
+                <div style="display:flex;flex-direction:column;gap:8px;">
                     @foreach ($myJobs as $job)
-                        @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'class' => 'bg-slate-100 text-slate-500']; @endphp
-                        <div class="bg-white border border-slate-200 rounded-xl px-4 py-3" x-data="{ editNote: false }">
-                            <div class="flex items-start gap-3">
+                        @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'bg' => '#F5F5F3', 'color' => '#717171']; @endphp
+                        <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:12px;padding:14px 16px;" x-data="{ editNote: false }">
+                            <div style="display:flex;align-items:flex-start;gap:12px;">
                                 @if ($job->fileUrl())
                                     @if (str_contains($job->mime_type ?? '', 'pdf'))
-                                        <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-red-400">
-                                            <i class="fa-solid fa-file-pdf text-xl"></i>
+                                        <div style="width:48px;height:48px;flex-shrink:0;border-radius:9px;background:#FFF0F0;border:1px solid #FECACA;display:flex;align-items:center;justify-content:center;color:#EF4444;">
+                                            <i class="fa-solid fa-file-pdf" style="font-size:20px;"></i>
                                         </div>
                                     @else
                                         <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
-                                            class="w-12 h-12 flex-shrink-0 rounded-lg object-cover border border-slate-200">
+                                            style="width:48px;height:48px;flex-shrink:0;border-radius:9px;object-fit:cover;border:1px solid #E5E5E5;">
                                     @endif
                                 @else
-                                    <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
-                                        <i class="fa-solid fa-image text-xl"></i>
+                                    <div style="width:48px;height:48px;flex-shrink:0;border-radius:9px;background:#F5F5F3;border:1px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
+                                        <i class="fa-solid fa-image" style="font-size:20px;"></i>
                                     </div>
                                 @endif
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                                        <span class="font-bold text-slate-700 text-sm">#{{ $job->id }}</span>
-                                        <span class="text-xs {{ $st['class'] }} px-2 py-0.5 rounded-full font-semibold">{{ $st['label'] }}</span>
-                                        <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">{{ $job->printStation?->name ?? '—' }}</span>
-                                        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{{ $job->size?->name ?? '—' }}</span>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+                                        <span style="font-weight:700;font-size:13.5px;color:#111;">#{{ $job->id }}</span>
+                                        <span style="background:{{ $st['bg'] }};color:{{ $st['color'] }};font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:0.06em;">{{ $st['label'] }}</span>
+                                        <span style="background:#F5F5F3;color:#555;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;border:1px solid #E5E5E5;">{{ $job->printStation?->name ?? '—' }}</span>
+                                        <span style="background:#F5F5F3;color:#777;font-size:10.5px;padding:2px 8px;border-radius:5px;border:1px solid #E5E5E5;">{{ $job->size?->name ?? '—' }}</span>
                                     </div>
-                                    <div x-show="!editNote" class="flex items-center gap-2">
-                                        <span class="text-sm text-slate-600 truncate">{{ $job->note }}</span>
+                                    <div x-show="!editNote" style="display:flex;align-items:center;gap:8px;">
+                                        <span style="font-size:13px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $job->note }}</span>
                                         <button type="button" @click="editNote = true"
-                                            class="text-sky-500 hover:text-sky-700 text-xs flex-shrink-0">
+                                            style="background:none;border:none;font-size:12px;color:#F05A28;cursor:pointer;flex-shrink:0;font-weight:600;">
                                             <i class="fa-solid fa-pen-to-square"></i> Edit Note
                                         </button>
                                     </div>
-                                    <form x-show="editNote" method="POST" action="{{ route('jobs.note.update', $job) }}" class="flex gap-2 mt-1">
+                                    <form x-show="editNote" method="POST" action="{{ route('jobs.note.update', $job) }}" style="display:flex;gap:6px;margin-top:4px;">
                                         @csrf @method('PATCH')
                                         <input type="text" name="note" value="{{ $job->note === '-' ? '' : $job->note }}"
                                             placeholder="Enter note..."
-                                            class="flex-1 rounded border-slate-300 px-2 py-1 text-sm min-w-0">
-                                        <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-3 py-1 rounded font-semibold">Save</button>
-                                        <button type="button" @click="editNote = false" class="text-xs text-slate-400 hover:text-slate-600 px-2">Cancel</button>
+                                            style="flex:1;border:1.5px solid #E5E5E5;border-radius:8px;padding:6px 10px;font-size:12.5px;min-width:0;font-family:'DM Sans',sans-serif;outline:none;">
+                                        <button type="submit" style="background:#F05A28;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Save</button>
+                                        <button type="button" @click="editNote = false" style="background:none;border:none;font-size:12px;color:#A0A0A0;cursor:pointer;">Cancel</button>
                                     </form>
                                     @if ($job->jobLabels->isNotEmpty())
-                                        <div class="mt-1.5 flex flex-wrap gap-1">
+                                        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
                                             @foreach ($job->jobLabels as $lbl)
-                                                <span class="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs px-2 py-0.5 rounded-full">
+                                                <span style="background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:11px;padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;">
                                                     {{ $lbl->label_name }}
-                                                    <span class="font-bold">{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</span>
+                                                    <strong>{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</strong>
                                                 </span>
                                             @endforeach
                                         </div>
                                     @endif
-                                    <div class="text-xs text-slate-400 mt-0.5">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
+                                    <div style="font-size:11.5px;color:#A0A0A0;margin-top:4px;">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
                                 </div>
                                 @if ($job->status->value === 'pending')
                                     <form method="POST" action="{{ route('jobs.destroy', $job) }}"
                                         onsubmit="return confirm('Delete Job #{{ $job->id }}? This cannot be undone.')">
                                         @csrf @method('DELETE')
-                                        <button type="submit"
-                                            class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition flex-shrink-0" title="Delete">
-                                            <i class="fa-solid fa-trash text-sm"></i>
+                                        <button type="submit" style="background:none;border:none;color:#EF4444;cursor:pointer;padding:8px;border-radius:8px;font-size:14px;flex-shrink:0;" title="Delete">
+                                            <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </form>
                                 @endif
@@ -456,47 +460,47 @@
         {{-- All Jobs --}}
         <div x-show="tab === 'all'">
             @if ($allJobs->isEmpty())
-                <p class="text-slate-400 text-sm py-6 text-center">No jobs found.</p>
+                <p style="color:#A0A0A0;font-size:13.5px;text-align:center;padding:32px 0;">No jobs found.</p>
             @else
-                <div class="space-y-2">
+                <div style="display:flex;flex-direction:column;gap:8px;">
                     @foreach ($allJobs as $job)
-                        @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'class' => 'bg-slate-100 text-slate-500']; @endphp
-                        <div class="bg-white border border-slate-200 rounded-xl px-4 py-3">
-                            <div class="flex items-start gap-3">
+                        @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'bg' => '#F5F5F3', 'color' => '#717171']; @endphp
+                        <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:12px;padding:14px 16px;">
+                            <div style="display:flex;align-items:flex-start;gap:12px;">
                                 @if ($job->fileUrl())
                                     @if (str_contains($job->mime_type ?? '', 'pdf'))
-                                        <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-red-400">
-                                            <i class="fa-solid fa-file-pdf text-xl"></i>
+                                        <div style="width:48px;height:48px;flex-shrink:0;border-radius:9px;background:#FFF0F0;border:1px solid #FECACA;display:flex;align-items:center;justify-content:center;color:#EF4444;">
+                                            <i class="fa-solid fa-file-pdf" style="font-size:20px;"></i>
                                         </div>
                                     @else
                                         <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
-                                            class="w-12 h-12 flex-shrink-0 rounded-lg object-cover border border-slate-200">
+                                            style="width:48px;height:48px;flex-shrink:0;border-radius:9px;object-fit:cover;border:1px solid #E5E5E5;">
                                     @endif
                                 @else
-                                    <div class="w-12 h-12 flex-shrink-0 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
-                                        <i class="fa-solid fa-image text-xl"></i>
+                                    <div style="width:48px;height:48px;flex-shrink:0;border-radius:9px;background:#F5F5F3;border:1px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
+                                        <i class="fa-solid fa-image" style="font-size:20px;"></i>
                                     </div>
                                 @endif
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                                        <span class="font-bold text-slate-700 text-sm">#{{ $job->id }}</span>
-                                        <span class="text-xs {{ $st['class'] }} px-2 py-0.5 rounded-full font-semibold">{{ $st['label'] }}</span>
-                                        <span class="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">{{ $job->printStation?->name ?? '—' }}</span>
-                                        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{{ $job->size?->name ?? '—' }}</span>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+                                        <span style="font-weight:700;font-size:13.5px;color:#111;">#{{ $job->id }}</span>
+                                        <span style="background:{{ $st['bg'] }};color:{{ $st['color'] }};font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:0.06em;">{{ $st['label'] }}</span>
+                                        <span style="background:#F5F5F3;color:#555;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;border:1px solid #E5E5E5;">{{ $job->printStation?->name ?? '—' }}</span>
+                                        <span style="background:#F5F5F3;color:#777;font-size:10.5px;padding:2px 8px;border-radius:5px;border:1px solid #E5E5E5;">{{ $job->size?->name ?? '—' }}</span>
                                     </div>
-                                    <div class="text-sm text-slate-600 truncate">{{ $job->note }}</div>
+                                    <div style="font-size:13px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $job->note }}</div>
                                     @if ($job->jobLabels->isNotEmpty())
-                                        <div class="mt-1.5 flex flex-wrap gap-1">
+                                        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
                                             @foreach ($job->jobLabels as $lbl)
-                                                <span class="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 text-xs px-2 py-0.5 rounded-full">
+                                                <span style="background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:11px;padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;">
                                                     {{ $lbl->label_name }}
-                                                    <span class="font-bold">{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</span>
+                                                    <strong>{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</strong>
                                                 </span>
                                             @endforeach
                                         </div>
                                     @endif
-                                    <div class="text-xs text-slate-400 mt-0.5">
-                                        {{ $job->uploader?->name ?? '—' }} &middot; {{ $job->created_at->format('d/m/Y h:i A') }}
+                                    <div style="font-size:11.5px;color:#A0A0A0;margin-top:4px;">
+                                        {{ $job->uploader?->name ?? '—' }} · {{ $job->created_at->format('d/m/Y h:i A') }}
                                     </div>
                                 </div>
                             </div>

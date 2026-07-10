@@ -22,17 +22,17 @@
         <form method="POST" action="{{ route('users.store') }}" class="p-6 space-y-4">
             @csrf
             <div>
-                <label class="block text-sm font-semibold mb-1 text-slate-700">Name</label>
+                <label style="display:block;font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:5px;">Name</label>
                 <input type="text" name="name" value="{{ old('name') }}" required
-                    class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30">
+                    style="width:100%;border:1.5px solid #E5E5E5;border-radius:8px;padding:8px 12px;font-size:13.5px;outline:none;">
             </div>
             <div>
-                <label class="block text-sm font-semibold mb-1 text-slate-700">Email</label>
+                <label style="display:block;font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:5px;">Email</label>
                 <input type="email" name="email" value="{{ old('email') }}" required
-                    class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30">
+                    style="width:100%;border:1.5px solid #E5E5E5;border-radius:8px;padding:8px 12px;font-size:13.5px;outline:none;">
             </div>
             <div x-data="{ show: false }">
-                <label class="block text-sm font-semibold mb-1 text-slate-700">Password</label>
+                <label style="display:block;font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:5px;">Password</label>
                 <div class="relative">
                     <input :type="show ? 'text' : 'password'" name="password" required
                         class="w-full rounded-lg border-slate-300 px-3 py-2 pr-10 text-sm focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30">
@@ -281,12 +281,12 @@
                         @csrf
                         @method('PATCH')
                         <div>
-                            <label class="block text-sm font-semibold mb-1 text-slate-700">Name</label>
+                            <label style="display:block;font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:5px;">Name</label>
                             <input type="text" name="name" value="{{ $user->name }}" required
                                 class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-400/30">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold mb-1 text-slate-700">Email</label>
+                            <label style="display:block;font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:5px;">Email</label>
                             <input type="email" name="email" value="{{ $user->email }}" required
                                 class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-400/30">
                         </div>
