@@ -12,6 +12,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\BinController;
+use App\Http\Controllers\StorageUsageController;
 use App\Http\Controllers\ChunkedUploadController;
 use App\Http\Controllers\UploaderController;
 use App\Http\Controllers\UserController;
@@ -89,6 +90,10 @@ Route::middleware('auth')->group(function () {
         Route::patch('/settings/stations/{station}/default', [SettingsController::class, 'setDefaultStation'])->name('settings.stations.default');
         Route::patch('/settings/stations/{station}/cutting', [SettingsController::class, 'toggleStationCutting'])->name('settings.stations.cutting');
         Route::patch('/settings/cutting-types/{cuttingType}/default', [SettingsController::class, 'setDefaultCuttingType'])->name('settings.cutting-types.default');
+    });
+
+    Route::middleware('permission:storage')->group(function () {
+        Route::get('/storage-usage', [StorageUsageController::class, 'index'])->name('storage.index');
     });
 
     Route::middleware('permission:bin')->group(function () {

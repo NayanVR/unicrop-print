@@ -74,6 +74,11 @@
                             <i class="fa-solid fa-gear w-4"></i> System Settings
                         </a>
                     @endif
+                    @if (auth()->user()->hasPermission('storage'))
+                        <a href="{{ route('storage.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('storage.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+                            <i class="fa-solid fa-hard-drive w-4"></i> Storage
+                        </a>
+                    @endif
                     @if (auth()->user()->hasPermission('bin'))
                         <a href="{{ route('bin.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition {{ request()->routeIs('bin.*') ? 'nav-active text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                             <i class="fa-solid fa-trash-can w-4"></i> Bin

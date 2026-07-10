@@ -20,6 +20,8 @@ class Permission
 
     public const BIN = 'bin';
 
+    public const STORAGE = 'storage';
+
     public const ALL = [
         self::UPLOAD_DESIGN => 'Upload Design',
         self::PRINT_STATION => 'Print Station',
@@ -29,5 +31,6 @@ class Permission
         self::SYSTEM_SETTINGS => 'System Settings',
         self::LABEL_CHECKER => 'Label Checker',
         self::BIN => 'Bin',
+        self::STORAGE => 'Storage Usage',
     ];
 }
