@@ -18,30 +18,6 @@
                 </div>
             </div>
 
-            <!-- Live IST Clock -->
-            <div class="hidden sm:flex sm:items-center"
-                 x-data="{
-                     time: '',
-                     date: '',
-                     tick() {
-                         const now = new Date();
-                         const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-                         const h = ist.getHours(), m = ist.getMinutes(), s = ist.getSeconds();
-                         const ampm = h >= 12 ? 'PM' : 'AM';
-                         const hh = h % 12 || 12;
-                         this.time = String(hh).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ' ' + ampm;
-                         const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-                         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                         this.date = days[ist.getDay()] + ', ' + String(ist.getDate()).padStart(2,'0') + ' ' + months[ist.getMonth()] + ' ' + ist.getFullYear();
-                     }
-                 }"
-                 x-init="tick(); setInterval(() => tick(), 1000)">
-                <div class="text-right leading-tight me-4">
-                    <div class="text-sm font-bold text-slate-700 tabular-nums" x-text="time"></div>
-                    <div class="text-xs text-slate-400" x-text="date"></div>
-                </div>
-            </div>
-
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">

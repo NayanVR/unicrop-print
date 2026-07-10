@@ -112,9 +112,32 @@
 
         <div class="flex-grow flex flex-col overflow-hidden">
             <div class="h-[70px] bg-white border-b border-[#1b5e2e]/10 flex items-center justify-between px-8 shrink-0">
-                <div class="flex items-center gap-2 text-sm font-semibold text-[#1b5e2e]">
-                    <div class="pulse-dot w-2 h-2 bg-[#3f9b3f] rounded-full"></div>
-                    <span>System Online</span>
+                <div class="flex items-center gap-4 text-sm font-semibold text-[#1b5e2e]">
+                    <div class="flex items-center gap-2">
+                        <div class="pulse-dot w-2 h-2 bg-[#3f9b3f] rounded-full"></div>
+                        <span>System Online</span>
+                    </div>
+                    <div x-data="{
+                            time: '',
+                            date: '',
+                            tick() {
+                                const now = new Date();
+                                const ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+                                const h = ist.getHours(), m = ist.getMinutes(), s = ist.getSeconds();
+                                const ampm = h >= 12 ? 'PM' : 'AM';
+                                const hh = h % 12 || 12;
+                                this.time = String(hh).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ' ' + ampm;
+                                const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                this.date = days[ist.getDay()] + ', ' + String(ist.getDate()).padStart(2,'0') + ' ' + months[ist.getMonth()] + ' ' + ist.getFullYear();
+                            }
+                        }"
+                        x-init="tick(); setInterval(() => tick(), 1000)"
+                        class="leading-tight text-slate-500 font-normal">
+                        <span class="font-semibold text-slate-700 tabular-nums" x-text="time"></span>
+                        <span class="mx-1 text-slate-300">|</span>
+                        <span x-text="date"></span>
+                    </div>
                 </div>
                 @isset($header)
                     <div class="text-sm text-slate-500">{{ $header }}</div>
