@@ -53,7 +53,7 @@
 
                 const CHUNK_SIZE = 900 * 1024; // 900KB — stays under nginx default 1MB limit
                 const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-                const uploadId = crypto.randomUUID();
+                const uploadId = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
                 const csrfToken = form.querySelector('[name=_token]').value;
                 const chunkUrl = '{{ route('uploader.chunk') }}';
 
@@ -108,7 +108,7 @@
                         }
                     } catch (err) {
                         this.uploading = false;
-                        this.uploadError = 'Upload failed on chunk ' + (i+1) + '. Please try again.';
+                        this.uploadError = 'Upload failed (chunk ' + (i+1) + '/' + totalChunks + '). ' + (err.message || 'Please try again.');
                         return;
                     }
                 }
@@ -250,8 +250,17 @@
                 </button>
             </div>
 
+            {{-- Upload error (shown even after uploading stops) --}}
+            <div x-show="uploadError" class="mb-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-2">
+                <i class="fa-solid fa-circle-xmark text-red-500 mt-0.5"></i>
+                <div>
+                    <p class="text-red-700 text-sm font-semibold" x-text="uploadError"></p>
+                    <button type="button" @click="uploadError=''; uploading=false;" class="text-xs text-red-500 underline mt-0.5">Try again</button>
+                </div>
+            </div>
+
             {{-- Upload progress --}}
-            <div x-show="uploading" class="mb-3">
+            <div x-show="uploading && !uploadError" class="mb-3">
 
                 {{-- Dancing emoji --}}
                 <div x-show="!uploadDone" class="flex flex-col items-center py-4">
@@ -287,7 +296,6 @@
                 <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
                     <span x-text="uploadPct + '% uploaded'"></span>
                 </div>
-                <p x-show="uploadError" x-text="uploadError" class="text-red-500 text-xs mt-2"></p>
                 <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
                     <div class="h-3 rounded-full transition-all duration-200"
                         :class="uploadDone ? 'bg-emerald-500' : 'bg-teal-500'"
