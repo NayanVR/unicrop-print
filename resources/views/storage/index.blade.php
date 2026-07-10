@@ -2,7 +2,8 @@
     <x-slot name="header">Storage Usage</x-slot>
 
     @php
-        function fmtBytes(int|float $bytes): string {
+        function fmtBytes(int|float|null $bytes): string {
+            $bytes = (float) $bytes;
             if ($bytes >= 1073741824) return round($bytes / 1073741824, 2) . ' GB';
             if ($bytes >= 1048576)    return round($bytes / 1048576, 1)  . ' MB';
             if ($bytes >= 1024)       return round($bytes / 1024, 1)     . ' KB';

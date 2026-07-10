@@ -10,11 +10,11 @@ class StorageUsageController extends Controller
     public function index(): View
     {
         // Active jobs
-        $activeBytes = PrintJob::sum('file_size');
+        $activeBytes = (float) PrintJob::sum('file_size');
         $activeCount = PrintJob::count();
 
         // Bin (soft-deleted)
-        $binBytes = PrintJob::onlyTrashed()->sum('file_size');
+        $binBytes = (float) PrintJob::onlyTrashed()->sum('file_size');
         $binCount = PrintJob::onlyTrashed()->count();
 
         $totalBytes = $activeBytes + $binBytes;
