@@ -51,7 +51,7 @@
                 this.uploadDone = false;
                 this.uploadError = '';
 
-                const CHUNK_SIZE = 900 * 1024; // 900KB — stays under nginx default 1MB limit
+                const CHUNK_SIZE = 512 * 1024; // 512KB — safely under nginx 1MB client_max_body_size
                 const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
                 const uploadId = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
                 const csrfToken = form.querySelector('[name=_token]').value;
@@ -86,18 +86,31 @@
                         });
                     }
 
-                    try {
-                        const res = await new Promise((resolve, reject) => {
-                            const xhr = new XMLHttpRequest();
-                            xhr.open('POST', chunkUrl);
-                            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                            xhr.addEventListener('load', () => {
-                                if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText));
-                                else reject(new Error(xhr.responseText));
-                            });
-                            xhr.addEventListener('error', () => reject(new Error('Network error')));
-                            xhr.send(fd);
+                    const sendChunk = (attempt) => new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', chunkUrl);
+                        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                try { resolve(JSON.parse(xhr.responseText)); }
+                                catch (e) { reject(new Error('Invalid server response')); }
+                            } else if ((xhr.status === 502 || xhr.status === 504) && attempt < 3) {
+                                // Gateway error — retry after short delay
+                                setTimeout(() => sendChunk(attempt + 1).then(resolve).catch(reject), 1500 * attempt);
+                            } else {
+                                // Strip HTML from error response (e.g. nginx error pages)
+                                const tmp = document.createElement('div');
+                                tmp.innerHTML = xhr.responseText;
+                                const text = tmp.textContent.trim().replace(/\s+/g, ' ').substring(0, 120);
+                                reject(new Error(text || 'HTTP ' + xhr.status));
+                            }
                         });
+                        xhr.addEventListener('error', () => reject(new Error('Network error')));
+                        xhr.send(fd);
+                    });
+
+                    try {
+                        const res = await sendChunk(1);
 
                         this.uploadPct = Math.round(((i + 1) / totalChunks) * 100);
 
