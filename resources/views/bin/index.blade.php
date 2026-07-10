@@ -9,7 +9,7 @@
                     <span class="bg-red-100 text-red-600 text-sm font-bold px-2.5 py-0.5 rounded-full">{{ $jobs->count() }}</span>
                 @endif
             </h2>
-            <p class="text-slate-500 text-sm mt-1">Deleted jobs — restore them or let them auto-purge.</p>
+            <p style="font-size:13px;color:#717171;margin-top:4px;">Deleted jobs — restore them or let them auto-purge.</p>
         </div>
 
         {{-- Auto-delete setting --}}

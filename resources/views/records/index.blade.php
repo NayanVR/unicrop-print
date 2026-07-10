@@ -3,8 +3,8 @@
 
     <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
-            <h2 class="text-2xl font-bold text-slate-900">Billing & Records</h2>
-            <p class="text-slate-500 text-sm mt-1">Per-day, monthly summary with GST and full job list.</p>
+            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Billing & Records</h2>
+            <p style="font-size:13px;color:#717171;margin-top:4px;">Per-day, monthly summary with GST and full job list.</p>
         </div>
         <a href="{{ route('records.pdf', request()->query()) }}" target="_blank"
             class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg">
@@ -12,7 +12,7 @@
         </a>
     </div>
 
-    <form method="GET" action="{{ route('records.index') }}" class="flex flex-wrap gap-3 items-center bg-slate-100 p-4 rounded-lg mb-6">
+    <form method="GET" action="{{ route('records.index') }}" class="filter-bar">
         <label class="font-bold text-sm">Filter:</label>
         <select name="month" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
             <option value="all" @selected($month === 'all')>All Months</option>
@@ -41,7 +41,7 @@
         <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file..." class="rounded border-slate-300 px-3 py-2 text-sm flex-1 min-w-[180px]">
         <input type="hidden" name="sort" value="{{ $sort }}">
         <input type="hidden" name="direction" value="{{ $direction }}">
-        <button type="submit" class="bg-slate-800 text-white text-sm px-4 py-2 rounded">Apply</button>
+        <button type="submit" type="submit">Apply</button>
         @if ($status !== 'all' || $search !== '' || $month !== 'all' || $year !== (string) now()->year || $stationId !== 'all')
             <a href="{{ route('records.index') }}" class="text-xs text-slate-500 underline">Reset</a>
         @endif

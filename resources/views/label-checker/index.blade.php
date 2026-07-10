@@ -2,8 +2,8 @@
     <x-slot name="header">Label Size Checker</x-slot>
 
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-slate-900">Label Size Checker</h2>
-        <p class="text-slate-500 text-sm mt-1">Upload up to 50 label images at once to find which bottle sizes they match.</p>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Label Size Checker</h2>
+        <p style="font-size:13px;color:#717171;margin-top:4px;">Upload up to 50 label images at once to find which bottle sizes they match.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

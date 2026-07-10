@@ -12,8 +12,8 @@
     @endphp
 
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-slate-900">Storage Usage</h2>
-        <p class="text-slate-500 text-sm mt-1">Total space used by uploaded design files.</p>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Storage Usage</h2>
+        <p style="font-size:13px;color:#717171;margin-top:4px;">Total space used by uploaded design files.</p>
     </div>
 
     {{-- Summary cards --}}

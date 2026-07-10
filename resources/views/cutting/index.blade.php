@@ -2,16 +2,16 @@
     <x-slot name="header">Cutting Station</x-slot>
 
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-slate-900">Cutting Station</h2>
-        <p class="text-slate-500 text-sm mt-1">Process jobs that are printed and waiting for cutting.</p>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Cutting Station</h2>
+        <p style="font-size:13px;color:#717171;margin-top:4px;">Process jobs that are printed and waiting for cutting.</p>
     </div>
 
-    <form method="GET" action="{{ route('cutting.index') }}" class="flex flex-wrap gap-4 items-center bg-slate-100 p-4 rounded-lg mb-6">
-        <label class="font-bold text-sm">Filter By:</label>
+    <form method="GET" action="{{ route('cutting.index') }}" class="filter-bar">
+        <label class="">Filter By:</label>
         <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file name..." class="rounded border-slate-300 px-3 py-2 text-sm flex-1 min-w-[200px]">
         <input type="hidden" name="sort" value="{{ $sort }}">
         <input type="hidden" name="direction" value="{{ $direction }}">
-        <button type="submit" class="bg-slate-800 text-white text-sm px-4 py-2 rounded">Apply</button>
+        <button type="submit" type="submit">Apply</button>
         @if ($search !== '')
             <a href="{{ route('cutting.index') }}" class="text-xs text-slate-500 underline">Reset filters</a>
         @endif

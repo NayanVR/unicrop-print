@@ -3,8 +3,8 @@
 
     <div class="mb-4 flex items-start justify-between flex-wrap gap-3">
         <div>
-            <h2 class="text-2xl font-bold text-slate-900">Dispatch</h2>
-            <p class="text-slate-500 text-sm mt-1">Select jobs ready to dispatch and mark them as completed.</p>
+            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Dispatch</h2>
+            <p style="font-size:13px;color:#717171;margin-top:4px;">Select jobs ready to dispatch and mark them as completed.</p>
         </div>
         <form method="GET" action="{{ route('dispatch.index') }}" class="flex items-center gap-2">
             <label class="text-sm font-semibold text-slate-600">Date:</label>

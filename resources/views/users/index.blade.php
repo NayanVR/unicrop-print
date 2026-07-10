@@ -3,7 +3,7 @@
 
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Users</h2>
+            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Manage Users</h2>
             <p class="mt-1 text-sm text-slate-500">Create users and control their access level.</p>
         </div>
         <button type="button" onclick="document.getElementById('create-user-modal').showModal()"

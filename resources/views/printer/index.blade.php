@@ -52,24 +52,24 @@
     </script>
 
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-slate-900">Print Queue Station</h2>
-        <p class="text-slate-500 text-sm mt-1">Process pending print jobs. Once done, they will be sent to the Cutting Station.</p>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Print Queue Station</h2>
+        <p style="font-size:13px;color:#717171;margin-top:4px;">Process pending print jobs. Once done, they will be sent to the Cutting Station.</p>
     </div>
 
-    <form method="GET" action="{{ route('printer.index') }}" class="flex flex-wrap gap-4 items-center bg-slate-100 p-4 rounded-lg mb-6">
-        <label class="font-bold text-sm">Filter By:</label>
-        <select name="station_id" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
+    <form method="GET" action="{{ route('printer.index') }}" class="filter-bar">
+        <label>Filter By:</label>
+        <select name="station_id" onchange="this.form.submit()">
             <option value="all" @selected($stationId === 'all')>All Stations</option>
             @foreach ($stations as $station)
                 <option value="{{ $station->id }}" @selected($stationId === (string) $station->id)>{{ $station->name }}</option>
             @endforeach
         </select>
-        <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file name..." class="rounded border-slate-300 px-3 py-2 text-sm flex-1 min-w-[200px]">
+        <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file name..." style="flex:1;min-width:200px;">
         <input type="hidden" name="sort" value="{{ $sort }}">
         <input type="hidden" name="direction" value="{{ $direction }}">
-        <button type="submit" class="bg-slate-800 text-white text-sm px-4 py-2 rounded">Apply</button>
+        <button type="submit">Apply</button>
         @if ($stationId !== 'all' || $search !== '')
-            <a href="{{ route('printer.index') }}" class="text-xs text-slate-500 underline">Reset filters</a>
+            <a href="{{ route('printer.index') }}">Reset</a>
         @endif
     </form>
 
