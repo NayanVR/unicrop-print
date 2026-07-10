@@ -61,13 +61,13 @@ class ChunkedUploadController extends Controller
         ]);
 
         // Merge chunks into a temp file
-        $tmpPath = storage_path('app/' . self::CHUNK_DIR . '/' . $uploadId . '/merged');
+        $tmpPath = Storage::disk('local')->path(self::CHUNK_DIR . '/' . $uploadId . '/merged');
         if (! is_dir(dirname($tmpPath))) {
             mkdir(dirname($tmpPath), 0755, true);
         }
         $out = fopen($tmpPath, 'wb');
         for ($i = 0; $i < $totalChunks; $i++) {
-            $chunkPath = storage_path('app/' . self::CHUNK_DIR . '/' . $uploadId . '/chunk_' . $i);
+            $chunkPath = Storage::disk('local')->path(self::CHUNK_DIR . '/' . $uploadId . '/chunk_' . $i);
             if (! file_exists($chunkPath)) {
                 fclose($out);
                 $this->cleanup($uploadId);
