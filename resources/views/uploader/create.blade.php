@@ -393,18 +393,23 @@
                         @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'bg' => '#F5F5F3', 'color' => '#717171']; @endphp
                         <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:12px;padding:14px 16px;" x-data="{ editNote: false }">
                             <div style="display:flex;align-items:flex-start;gap:12px;">
-                                @if ($job->fileUrl())
-                                    @if (str_contains($job->mime_type ?? '', 'pdf'))
-                                        <div style="width:48px;height:48px;flex-shrink:0;border-radius:9px;background:#FFF0F0;border:1px solid #FECACA;display:flex;align-items:center;justify-content:center;color:#EF4444;">
-                                            <i class="fa-solid fa-file-pdf" style="font-size:20px;"></i>
-                                        </div>
-                                    @else
-                                        <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
-                                            style="width:48px;height:48px;flex-shrink:0;border-radius:9px;object-fit:cover;border:1px solid #E5E5E5;">
-                                    @endif
+                                @php $isImage = str_starts_with($job->mime_type ?? '', 'image/'); @endphp
+                                @if ($job->fileUrl() && str_contains($job->mime_type ?? '', 'pdf'))
+                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#FFF0F0;border:1.5px solid #FECACA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#EF4444;">
+                                        <i class="fa-solid fa-file-pdf" style="font-size:36px;"></i>
+                                        <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;">PDF</span>
+                                    </div>
+                                @elseif ($job->fileUrl() && $isImage)
+                                    <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;object-fit:cover;border:1.5px solid #E5E5E5;">
+                                @elseif ($job->fileUrl())
+                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#999;">
+                                        <i class="fa-solid fa-file" style="font-size:36px;"></i>
+                                        <span style="font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;">{{ strtoupper(pathinfo($job->file_name, PATHINFO_EXTENSION)) }}</span>
+                                    </div>
                                 @else
-                                    <div style="width:48px;height:48px;flex-shrink:0;border-radius:9px;background:#F5F5F3;border:1px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
-                                        <i class="fa-solid fa-image" style="font-size:20px;"></i>
+                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
+                                        <i class="fa-solid fa-image" style="font-size:32px;"></i>
                                     </div>
                                 @endif
                                 <div style="flex:1;min-width:0;">
@@ -467,18 +472,23 @@
                         @php $st = $statusConfig[$job->status->value] ?? ['label' => $job->status->value, 'bg' => '#F5F5F3', 'color' => '#717171']; @endphp
                         <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:12px;padding:14px 16px;">
                             <div style="display:flex;align-items:flex-start;gap:12px;">
-                                @if ($job->fileUrl())
-                                    @if (str_contains($job->mime_type ?? '', 'pdf'))
-                                        <div style="width:48px;height:48px;flex-shrink:0;border-radius:9px;background:#FFF0F0;border:1px solid #FECACA;display:flex;align-items:center;justify-content:center;color:#EF4444;">
-                                            <i class="fa-solid fa-file-pdf" style="font-size:20px;"></i>
-                                        </div>
-                                    @else
-                                        <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
-                                            style="width:48px;height:48px;flex-shrink:0;border-radius:9px;object-fit:cover;border:1px solid #E5E5E5;">
-                                    @endif
+                                @php $isImage2 = str_starts_with($job->mime_type ?? '', 'image/'); @endphp
+                                @if ($job->fileUrl() && str_contains($job->mime_type ?? '', 'pdf'))
+                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#FFF0F0;border:1.5px solid #FECACA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#EF4444;">
+                                        <i class="fa-solid fa-file-pdf" style="font-size:36px;"></i>
+                                        <span style="font-size:10px;font-weight:700;">PDF</span>
+                                    </div>
+                                @elseif ($job->fileUrl() && $isImage2)
+                                    <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;object-fit:cover;border:1.5px solid #E5E5E5;">
+                                @elseif ($job->fileUrl())
+                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#999;">
+                                        <i class="fa-solid fa-file" style="font-size:36px;"></i>
+                                        <span style="font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;">{{ strtoupper(pathinfo($job->file_name, PATHINFO_EXTENSION)) }}</span>
+                                    </div>
                                 @else
-                                    <div style="width:48px;height:48px;flex-shrink:0;border-radius:9px;background:#F5F5F3;border:1px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
-                                        <i class="fa-solid fa-image" style="font-size:20px;"></i>
+                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
+                                        <i class="fa-solid fa-image" style="font-size:32px;"></i>
                                     </div>
                                 @endif
                                 <div style="flex:1;min-width:0;">

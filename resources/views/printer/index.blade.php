@@ -135,25 +135,31 @@
                         <tr class="{{ $job->needs_lamination ? 'bg-indigo-50 ring-2 ring-inset ring-indigo-400' : '' }}">
                             <td class="px-4 py-3 {{ $job->needs_lamination ? 'font-bold text-indigo-700' : '' }}">#{{ $job->id }}</td>
                             <td class="px-4 py-3">
-                                @if ($job->fileUrl())
-                                    @if (str_contains($job->mime_type ?? '', 'pdf'))
-                                        <button type="button"
-                                            @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; open = true"
-                                            class="flex items-center justify-center w-16 h-16 rounded-lg bg-red-50 border border-red-200 hover:bg-red-100 transition text-red-500 flex-col gap-1">
-                                            <i class="fa-solid fa-file-pdf text-2xl"></i>
-                                            <span class="text-[9px] font-semibold">PDF</span>
-                                        </button>
-                                    @else
-                                        <button type="button"
-                                            @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; open = true"
-                                            class="block w-16 h-16 rounded-lg {{ $job->needs_lamination ? 'border-2 border-indigo-400 ring-2 ring-indigo-300' : 'border border-slate-200' }} overflow-hidden hover:ring-2 hover:ring-purple-400 transition">
-                                            <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
-                                                class="w-full h-full object-cover" loading="lazy">
-                                        </button>
-                                    @endif
+                                @php $isImg = str_starts_with($job->mime_type ?? '', 'image/'); @endphp
+                                @if ($job->fileUrl() && str_contains($job->mime_type ?? '', 'pdf'))
+                                    <button type="button"
+                                        @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; open = true"
+                                        style="width:120px;height:120px;border-radius:10px;background:#FFF0F0;border:1.5px solid #FECACA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#EF4444;cursor:pointer;">
+                                        <i class="fa-solid fa-file-pdf" style="font-size:36px;"></i>
+                                        <span style="font-size:10px;font-weight:700;">PDF</span>
+                                    </button>
+                                @elseif ($job->fileUrl() && $isImg)
+                                    <button type="button"
+                                        @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; open = true"
+                                        style="width:120px;height:120px;border-radius:10px;{{ $job->needs_lamination ? 'border:2.5px solid #818CF8;' : 'border:1.5px solid #E5E5E5;' }}overflow:hidden;cursor:pointer;display:block;padding:0;">
+                                        <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                            style="width:100%;height:100%;object-fit:cover;" loading="lazy">
+                                    </button>
+                                @elseif ($job->fileUrl())
+                                    <button type="button"
+                                        @click="previewUrl = '{{ $job->fileUrl() }}'; previewMime = '{{ $job->mime_type }}'; previewName = '{{ addslashes($job->file_name) }}'; open = true"
+                                        style="width:120px;height:120px;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#999;cursor:pointer;">
+                                        <i class="fa-solid fa-file" style="font-size:36px;"></i>
+                                        <span style="font-size:10px;font-weight:700;text-transform:uppercase;">{{ strtoupper(pathinfo($job->file_name, PATHINFO_EXTENSION)) }}</span>
+                                    </button>
                                 @else
-                                    <div class="w-16 h-16 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-300">
-                                        <i class="fa-solid fa-image text-2xl"></i>
+                                    <div style="width:120px;height:120px;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
+                                        <i class="fa-solid fa-image" style="font-size:32px;"></i>
                                     </div>
                                 @endif
                             </td>
