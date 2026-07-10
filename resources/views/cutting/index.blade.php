@@ -8,12 +8,12 @@
 
     <form method="GET" action="{{ route('cutting.index') }}" class="filter-bar">
         <label class="">Filter By:</label>
-        <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file name..." class="rounded border-slate-300 px-3 py-2 text-sm flex-1 min-w-[200px]">
+        <input type="text" name="search" value="{{ $search }}" placeholder="Search note or file name..." >
         <input type="hidden" name="sort" value="{{ $sort }}">
         <input type="hidden" name="direction" value="{{ $direction }}">
-        <button type="submit" type="submit">Apply</button>
+        <button type="submit">Apply</button>
         @if ($search !== '')
-            <a href="{{ route('cutting.index') }}" class="text-xs text-slate-500 underline">Reset filters</a>
+            <a href="{{ route('cutting.index') }}" style="color:rgba(255,255,255,0.45);font-size:12px;">Reset filters</a>
         @endif
     </form>
 
@@ -29,7 +29,7 @@
         };
     @endphp
 
-    <div class="bg-white border border-slate-200 rounded-xl p-6" x-data="{ previewUrl: '', previewMime: '', previewName: '', open: false }">
+    <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:22px;" x-data="{ previewUrl: '', previewMime: '', previewName: '', open: false }">
 
         {{-- File preview modal --}}
         <dialog x-bind:open="open" @click.self="open = false"
@@ -123,7 +123,7 @@
                                     @csrf
                                     @method('PATCH')
                                 </form>
-                                <button type="submit" form="cut-job-{{ $job->id }}" class="bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold px-3 py-2 rounded">
+                                <button type="submit" form="cut-job-{{ $job->id }}" style="background:#F05A28;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;">
                                     Mark Cut & Done
                                 </button>
                                 @if (auth()->user()->isAdmin())

@@ -4,18 +4,18 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Manage Users</h2>
-            <p class="mt-1 text-sm text-slate-500">Create users and control their access level.</p>
+            <p style="font-size:13px;color:#717171;margin-top:4px;">Create users and control their access level.</p>
         </div>
         <button type="button" onclick="document.getElementById('create-user-modal').showModal()"
-            class="inline-flex items-center gap-2 bg-[#1b5e2e] hover:bg-[#164d26] text-white font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
+            style="display:inline-flex;align-items:center;gap:8px;background:#111;color:#fff;font-size:13.5px;font-weight:600;padding:9px 18px;border-radius:9px;border:none;cursor:pointer;text-decoration:none;" onmouseover="this.style.background='#F05A28'" onmouseout="this.style.background='#111'"  font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
             <i class="fa-solid fa-user-plus text-sm"></i> New User
         </button>
     </div>
 
     {{-- Create User Modal --}}
-    <dialog id="create-user-modal" class="rounded-2xl shadow-2xl p-0 w-full max-w-md border-0 backdrop:bg-black/50"
+    <dialog id="create-user-modal" style="border-radius:14px;padding:0;width:100%;max-width:420px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.25);" class="backdrop:bg-black/50"
         x-data="{ printStation: false, isAdmin: false }">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1.5px solid #F0F0EE;">
             <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-user-plus text-[#1b5e2e]"></i> Create New User</h3>
             <button type="button" onclick="document.getElementById('create-user-modal').close()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
         </div>
@@ -76,7 +76,7 @@
                 <button type="button" onclick="document.getElementById('create-user-modal').close()"
                     class="px-4 py-2 text-sm rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">Cancel</button>
                 <button type="submit"
-                    class="px-4 py-2 text-sm rounded-lg bg-[#1b5e2e] hover:bg-[#164d26] text-white font-semibold transition">
+                    class="px-4 py-2 text-sm rounded-lg bg-black hover:bg-[#F05A28] text-white font-semibold transition">
                     Create User
                 </button>
             </div>
@@ -262,7 +262,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="mt-4 inline-flex items-center gap-1.5 bg-[#1b5e2e] hover:bg-[#164d26] text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+                        <button type="submit" class="mt-4 inline-flex items-center gap-1.5 bg-black hover:bg-[#F05A28] text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
                             <i class="fa-solid fa-check"></i> Save Changes
                         </button>
                     </form>
@@ -270,7 +270,7 @@
 
                 {{-- Edit Info Modal --}}
                 <dialog id="edit-info-{{ $user->id }}" class="rounded-2xl shadow-2xl p-0 w-96 border-0 backdrop:bg-black/50">
-                    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1.5px solid #F0F0EE;">
                         <h3 class="font-bold text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-pen text-sky-500"></i> Edit User Info
                         </h3>

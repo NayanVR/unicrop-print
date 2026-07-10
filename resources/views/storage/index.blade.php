@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">Storage Usage</x-slot>
+    <x-slot name="header">Storage</x-slot>
 
     @php
         function fmtBytes(int|float|null $bytes): string {
@@ -11,54 +11,60 @@
         }
     @endphp
 
-    <div class="mb-6">
-        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:0.06em;color:#111;line-height:1;">Storage Usage</h2>
+    <div class="mb-8">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:0.06em;color:#111;line-height:1;">Storage Usage</h2>
         <p style="font-size:13px;color:#717171;margin-top:4px;">Total space used by uploaded design files.</p>
     </div>
 
     {{-- Summary cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="bg-white border border-slate-200 rounded-xl p-5">
-            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Total Used</div>
-            <div class="text-3xl font-black text-slate-800">{{ fmtBytes($totalBytes) }}</div>
-            <div class="text-xs text-slate-400 mt-1">{{ $activeCount + $binCount }} files total</div>
+        <div style="background:#111;border-radius:14px;padding:22px 20px;position:relative;overflow:hidden;">
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;">Total Used</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:44px;color:#F05A28;line-height:1;">{{ fmtBytes($totalBytes) }}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">{{ $activeCount + $binCount }} files total</div>
+            <div style="position:absolute;bottom:14px;right:16px;font-size:24px;color:rgba(255,255,255,0.05);"><i class="fa-solid fa-hard-drive"></i></div>
         </div>
-        <div class="bg-white border border-emerald-200 rounded-xl p-5">
-            <div class="text-xs font-semibold text-emerald-500 uppercase tracking-wide mb-1">Active Jobs</div>
-            <div class="text-3xl font-black text-emerald-700">{{ fmtBytes($activeBytes) }}</div>
-            <div class="text-xs text-slate-400 mt-1">{{ $activeCount }} files</div>
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:22px 20px;position:relative;overflow:hidden;">
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#A0A0A0;margin-bottom:8px;">Active Jobs</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:44px;color:#111;line-height:1;">{{ fmtBytes($activeBytes) }}</div>
+            <div style="font-size:11px;color:#A0A0A0;margin-top:4px;">{{ $activeCount }} files</div>
+            <div style="position:absolute;bottom:14px;right:16px;font-size:24px;color:rgba(0,0,0,0.04);"><i class="fa-solid fa-circle-check"></i></div>
         </div>
-        <div class="bg-white border border-red-200 rounded-xl p-5">
-            <div class="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1">In Bin</div>
-            <div class="text-3xl font-black text-red-500">{{ fmtBytes($binBytes) }}</div>
-            <div class="text-xs text-slate-400 mt-1">{{ $binCount }} files</div>
+        <div style="background:#fff;border:1.5px solid #FECACA;border-radius:14px;padding:22px 20px;position:relative;overflow:hidden;">
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#F87171;margin-bottom:8px;">In Bin</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:44px;color:#EF4444;line-height:1;">{{ fmtBytes($binBytes) }}</div>
+            <div style="font-size:11px;color:#A0A0A0;margin-top:4px;">{{ $binCount }} files</div>
+            <div style="position:absolute;bottom:14px;right:16px;font-size:24px;color:rgba(239,68,68,0.06);"><i class="fa-solid fa-trash-can"></i></div>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {{-- Per uploader --}}
-        <div class="bg-white border border-slate-200 rounded-xl p-6">
-            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-users text-slate-400"></i> By Uploader
-            </h3>
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:24px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+                <div style="width:32px;height:32px;background:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-users" style="color:#F05A28;font-size:13px;"></i>
+                </div>
+                <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:#111;">By Uploader</span>
+            </div>
             @if ($byUploader->isEmpty())
-                <p class="text-slate-400 text-sm">No uploads yet.</p>
+                <p style="color:#A0A0A0;font-size:13.5px;">No uploads yet.</p>
             @else
                 @php $maxBytes = $byUploader->max('bytes'); @endphp
-                <div class="space-y-3">
+                <div style="display:flex;flex-direction:column;gap:14px;">
                     @foreach ($byUploader as $row)
                         @php $pct = $maxBytes > 0 ? round($row->bytes / $maxBytes * 100) : 0; @endphp
                         <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm font-semibold text-slate-700">{{ $row->name }}</span>
-                                <div class="text-right">
-                                    <span class="text-sm font-bold text-slate-800">{{ fmtBytes($row->bytes) }}</span>
-                                    <span class="text-xs text-slate-400 ml-1">{{ $row->files }} files</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                                <span style="font-size:13px;font-weight:600;color:#1A1A1A;">{{ $row->name }}</span>
+                                <div style="text-align:right;">
+                                    <span style="font-size:13px;font-weight:700;color:#111;">{{ fmtBytes($row->bytes) }}</span>
+                                    <span style="font-size:11px;color:#A0A0A0;margin-left:5px;">{{ $row->files }} files</span>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2">
-                                <div class="h-2 bg-teal-500 rounded-full" style="width: {{ $pct }}%"></div>
+                            <div style="width:100%;background:#F0F0EE;border-radius:999px;height:6px;">
+                                <div style="height:6px;background:#F05A28;border-radius:999px;width:{{ $pct }}%;"></div>
                             </div>
                         </div>
                     @endforeach
@@ -66,30 +72,31 @@
             @endif
         </div>
 
-        {{-- Daily usage (last 30 days) --}}
-        <div class="bg-white border border-slate-200 rounded-xl p-6">
-            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-calendar-days text-slate-400"></i> Last 30 Days (Daily Uploads)
-            </h3>
+        {{-- Daily usage --}}
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:24px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+                <div style="width:32px;height:32px;background:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-calendar-days" style="color:#F05A28;font-size:13px;"></i>
+                </div>
+                <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:#111;">Last 30 Days</span>
+            </div>
             @if ($byDay->isEmpty())
-                <p class="text-slate-400 text-sm">No uploads in last 30 days.</p>
+                <p style="color:#A0A0A0;font-size:13.5px;">No uploads in last 30 days.</p>
             @else
                 @php $maxDayBytes = $byDay->max('bytes'); @endphp
-                <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                <div style="display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;padding-right:4px;">
                     @foreach ($byDay->sortByDesc('day') as $row)
                         @php $pct = $maxDayBytes > 0 ? round($row->bytes / $maxDayBytes * 100) : 0; @endphp
                         <div>
-                            <div class="flex justify-between items-center mb-0.5">
-                                <span class="text-xs font-semibold text-slate-600">
-                                    {{ \Carbon\Carbon::parse($row->day)->format('d M Y') }}
-                                </span>
-                                <div class="text-right">
-                                    <span class="text-xs font-bold text-slate-700">{{ fmtBytes($row->bytes) }}</span>
-                                    <span class="text-xs text-slate-400 ml-1">{{ $row->files }} files</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                                <span style="font-size:12px;font-weight:600;color:#444;">{{ \Carbon\Carbon::parse($row->day)->format('d M Y') }}</span>
+                                <div>
+                                    <span style="font-size:12px;font-weight:700;color:#111;">{{ fmtBytes($row->bytes) }}</span>
+                                    <span style="font-size:11px;color:#A0A0A0;margin-left:4px;">{{ $row->files }} files</span>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-100 rounded-full h-1.5">
-                                <div class="h-1.5 bg-sky-400 rounded-full" style="width: {{ $pct }}%"></div>
+                            <div style="width:100%;background:#F0F0EE;border-radius:999px;height:5px;">
+                                <div style="height:5px;background:#111;border-radius:999px;width:{{ $pct }}%;"></div>
                             </div>
                         </div>
                     @endforeach

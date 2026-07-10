@@ -15,24 +15,24 @@
 
     {{-- Pending dispatch summary --}}
     @if ($pendingTotal > 0)
-        <div class="mb-6 bg-white border border-sky-200 border-t-4 border-t-sky-500 rounded-xl p-4" x-data="{ open: false }">
+        <div style="margin-bottom:20px;background:#fff;border:1.5px solid #E5E5E5;border-top:4px solid #F05A28;border-radius:14px;padding:18px;" x-data="{ open: false }">
             <div class="flex items-center justify-between gap-3 cursor-pointer" @click="open = !open">
                 <div class="flex items-center gap-3">
-                    <div class="bg-sky-100 text-sky-700 rounded-xl px-4 py-2 flex items-center gap-2 font-bold text-lg">
+                    <div style="background:#FFF1EC;color:#F05A28;border-radius:10px;padding:8px 16px;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:16px;">
                         <i class="fa-solid fa-truck-fast"></i>
                         {{ $pendingTotal }} jobs pending dispatch
                     </div>
                 </div>
-                <button type="button" class="text-xs text-sky-500 font-semibold flex items-center gap-1">
+                <button type="button" style="font-size:12px;font-weight:600;color:#F05A28;display:flex;align-items:center;gap:4px;">
                     Date-wise breakdown
                     <i class="fa-solid fa-chevron-down transition-transform duration-200" :class="open ? 'rotate-180' : ''"></i>
                 </button>
             </div>
 
-            <div x-show="open" x-collapse class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <div x-show="open" x-collapse style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">
                 @foreach ($pendingByDate as $row)
                     <a href="{{ route('dispatch.index', ['date' => $row->day]) }}"
-                        class="flex items-center justify-between bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg px-3 py-2 transition group">
+                        style="display:flex;align-items:center;justify-content:space-between;background:#F5F5F3;border:1.5px solid #E5E5E5;border-radius:8px;padding:8px 12px;" onmouseover="this.style.background='#FFF1EC'" onmouseout="this.style.background='#F5F5F3'">
                         <span class="text-sm font-semibold text-slate-700 group-hover:text-sky-800">
                             {{ \Carbon\Carbon::parse($row->day)->format('d M Y') }}
                         </span>
@@ -44,7 +44,7 @@
             </div>
         </div>
     @else
-        <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2 text-emerald-700 text-sm font-semibold">
+        <div style="margin-bottom:20px;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px;color:#15803D;font-size:13.5px;font-weight:600;">
             <i class="fa-solid fa-circle-check"></i> All caught up — no pending dispatches!
         </div>
     @endif
@@ -87,9 +87,9 @@
         </dialog>
 
         {{-- Today's jobs --}}
-        <div class="bg-white border border-slate-200 rounded-xl p-6 mb-6">
+        <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:22px;margin-bottom:20px;">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
-                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                <h3 style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.06em;color:#111;display:flex;align-items:center;gap:8px;">
                     <span class="w-2 h-2 bg-emerald-500 rounded-full inline-block"></span>
                     {{ \Carbon\Carbon::parse($date)->isToday() ? "Today's Jobs" : \Carbon\Carbon::parse($date)->format('d M Y') }}
                     <span class="text-slate-400 font-normal text-sm">({{ $todayJobs->count() }} jobs)</span>
@@ -189,8 +189,8 @@
                     </template>
                     <button type="submit"
                         x-bind:disabled="selected.length === 0"
-                        x-bind:class="selected.length > 0 ? 'bg-emerald-500 hover:bg-emerald-600 cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed'"
-                        class="text-white font-semibold px-6 py-2.5 rounded-lg transition flex items-center gap-2 text-sm">
+                        x-bind:style="selected.length > 0 ? 'background:#F05A28;cursor:pointer;' : 'background:#E5E5E5;color:#A0A0A0;cursor:not-allowed;'"
+                        style="color:#fff;font-weight:600;padding:10px 22px;border-radius:9px;border:none;display:flex;align-items:center;gap:8px;font-size:13.5px;">
                         <i class="fa-solid fa-truck"></i>
                         Dispatch <span x-show="selected.length > 0">(<span x-text="selected.length"></span>)</span> Selected
                     </button>
@@ -202,7 +202,7 @@
 
         {{-- Other pending dispatch jobs --}}
         @if ($otherJobs->count() > 0)
-            <div class="bg-white border border-slate-200 rounded-xl p-6">
+            <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:22px;">
                 <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4">
                     <span class="w-2 h-2 bg-amber-400 rounded-full inline-block"></span>
                     Other Pending Dispatch

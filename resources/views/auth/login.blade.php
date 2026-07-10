@@ -1,133 +1,197 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'Laravel') }} - Login</title>
-
-    <!-- Fonts -->
+    <title>{{ config('app.name', 'Unicrop Print') }} — Login</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
-
-    <!-- Scripts -->
+    <link href="https://fonts.bunny.net/css?family=bebas-neue:400|dm-sans:300,400,500,600,700&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     <style>
-        .leaf-pattern {
-            background-color: #0f4023;
-            background-image:
-                radial-gradient(circle at 20% 30%, rgba(111, 191, 63, 0.35) 0, transparent 18%),
-                radial-gradient(circle at 80% 20%, rgba(111, 191, 63, 0.3) 0, transparent 20%),
-                radial-gradient(circle at 60% 70%, rgba(63, 155, 63, 0.4) 0, transparent 22%),
-                radial-gradient(circle at 30% 85%, rgba(111, 191, 63, 0.3) 0, transparent 20%),
-                linear-gradient(160deg, #0f4023 0%, #1b5e2e 45%, #3f9b3f 100%);
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; background: #F0F2F5; }
+
+        .login-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: #fff;
         }
-        .leaf-shape {
+
+        .login-right {
+            width: 480px;
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .login-right { display: none; }
+        }
+
+        .login-right .bg-text {
             position: absolute;
-            border-radius: 0% 60% 0% 60%;
-            background: rgba(255, 255, 255, 0.08);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 220px;
+            color: rgba(255,255,255,0.03);
+            line-height: 1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            letter-spacing: 0.05em;
+            pointer-events: none;
+            user-select: none;
         }
-        @keyframes sway {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(6deg); }
+
+        .form-wrap {
+            width: 100%;
+            max-width: 380px;
         }
-        .sway { animation: sway 6s ease-in-out infinite; }
-        .sway-slow { animation: sway 9s ease-in-out infinite; animation-delay: -3s; }
+
+        .form-wrap .logo { margin-bottom: 32px; }
+
+        .form-wrap h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 52px;
+            letter-spacing: 0.05em;
+            color: #111;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .form-wrap p {
+            font-size: 13.5px;
+            color: #717171;
+            margin-bottom: 32px;
+        }
+
+        .field { margin-bottom: 14px; }
+
+        .field input {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            border: 1.5px solid #E5E5E5;
+            border-radius: 10px;
+            background: #FAFAF8;
+            color: #111;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .field input:focus {
+            border-color: #F05A28;
+            box-shadow: 0 0 0 3px rgba(240,90,40,0.1);
+            background: #fff;
+        }
+
+        .field input::placeholder { color: #B0B0B0; }
+
+        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+
+        .remember { display: flex; align-items: center; gap: 7px; font-size: 13px; color: #555; cursor: pointer; }
+        .remember input { accent-color: #F05A28; width: 15px; height: 15px; }
+
+        .forgot { font-size: 13px; font-weight: 600; color: #F05A28; text-decoration: none; }
+        .forgot:hover { text-decoration: underline; }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: #111;
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            letter-spacing: 0.03em;
+            transition: background 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login:hover { background: #F05A28; }
+
+        .error-msg {
+            background: #FFF0F0;
+            border: 1.5px solid #FECACA;
+            color: #B91C1C;
+            border-radius: 9px;
+            padding: 10px 14px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
+<body>
 
-<body class="font-sans antialiased">
-    <div class="min-h-screen flex items-center justify-center bg-[#f4f1ea] p-4">
-        <div class="w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2 bg-white border border-[#0f4023]/10">
-
-            <!-- Left: form -->
-            <div class="px-8 sm:px-12 py-12 flex flex-col justify-center">
-                <x-unicrop-logo class="mb-10" />
-
-                <h1 class="text-3xl font-extrabold text-[#1b5e2e] tracking-tight">
-                    {{ __('Welcome Back!') }}
-                </h1>
-                <p class="text-gray-500 mt-1 mb-8">{{ __('Please log in to your account.') }}</p>
-
-                <x-auth-session-status class="mb-4" :status="session('status')" />
-
-                <form method="POST" action="{{ route('login') }}" class="space-y-5">
-                    @csrf
-
-                    <!-- Email Address -->
-                    <div>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
-                            placeholder="{{ __('Email Address') }}"
-                            class="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-800 placeholder-gray-400 focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30 transition" />
-                        <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                    </div>
-
-                    <!-- Password -->
-                    <div>
-                        <input id="password" type="password" name="password" required autocomplete="current-password"
-                            placeholder="{{ __('Password') }}"
-                            class="block w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-800 placeholder-gray-400 focus:border-[#3f9b3f] focus:ring-2 focus:ring-[#3f9b3f]/30 transition" />
-                        <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                    </div>
-
-                    <!-- Remember Me / Forgot -->
-                    <div class="flex items-center justify-between">
-                        <label for="remember_me" class="inline-flex items-center cursor-pointer">
-                            <input id="remember_me" type="checkbox" name="remember" checked
-                                class="rounded border-gray-300 text-[#3f9b3f] focus:ring-[#3f9b3f]">
-                            <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-                        </label>
-
-                        @if (Route::has('password.request'))
-                            <a class="text-sm font-medium text-rose-500 hover:text-rose-600 transition" href="{{ route('password.request') }}">
-                                {{ __('Forgot password?') }}
-                            </a>
-                        @endif
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                        <button type="submit"
-                            class="flex-1 rounded-lg py-3 font-semibold text-white bg-[#1b5e2e] hover:bg-[#164d26] shadow-md transition">
-                            {{ __('Login') }}
-                        </button>
-
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}"
-                                class="flex-1 text-center rounded-lg py-3 font-semibold text-[#1b5e2e] border border-[#1b5e2e] hover:bg-[#1b5e2e]/5 transition">
-                                {{ __('Create account') }}
-                            </a>
-                        @endif
-                    </div>
-                </form>
-
-                <p class="text-xs text-gray-400 mt-10">
-                    {{ __('By signing up you agree to our terms and that you have read our data policy.') }}
-                </p>
+    {{-- Left: form --}}
+    <div class="login-left">
+        <div class="form-wrap">
+            <div class="logo">
+                <x-unicrop-logo variant="dark" />
             </div>
 
-            <!-- Right: green nature panel -->
-            <div class="leaf-pattern relative hidden md:block overflow-hidden">
-                <div class="leaf-shape sway w-40 h-40 top-10 left-10"></div>
-                <div class="leaf-shape sway-slow w-56 h-56 bottom-16 -right-10"></div>
-                <div class="leaf-shape sway w-32 h-32 bottom-1/3 left-1/4"></div>
-                <div class="leaf-shape sway-slow w-24 h-24 top-1/3 right-10"></div>
+            <h1>Welcome<br>Back.</h1>
+            <p>Log in to your Unicrop Print account.</p>
 
-                <div class="relative z-10 h-full flex flex-col items-center justify-center text-center px-10">
-                    <svg viewBox="0 0 100 100" class="w-20 h-20 mb-6">
-                        <path d="M50 90C50 90 20 65 20 40C20 22 33 10 50 10C67 10 80 22 80 40C80 65 50 90 50 90Z" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="2"/>
-                        <path d="M50 80V30M50 30C50 30 35 35 35 50M50 30C50 30 65 35 65 50" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    </svg>
-                    <h2 class="text-white text-2xl font-bold">{{ __('Grow with Unicrop Biochem') }}</h2>
-                    <p class="text-white/70 mt-2 max-w-xs">
-                        {{ __('Sustainable bio-solutions for healthier crops and a greener tomorrow.') }}
-                    </p>
+            <x-auth-session-status class="mb-4" :status="session('status')" />
+
+            @if ($errors->any())
+                <div class="error-msg">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
                 </div>
+            @endif
+
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
+                <div class="field">
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="Email address" required autofocus>
+                </div>
+                <div class="field">
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+                <div class="row">
+                    <label class="remember">
+                        <input type="checkbox" name="remember" checked> Remember me
+                    </label>
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="forgot">Forgot password?</a>
+                    @endif
+                </div>
+                <button type="submit" class="btn-login">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    {{-- Right: black panel --}}
+    <div class="login-right">
+        <div class="bg-text">PRINT</div>
+        <div style="position:relative;z-index:1;text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:0.18em;color:rgba(255,255,255,0.35);margin-bottom:20px;">UNICROP PRINT</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:62px;letter-spacing:0.05em;color:#fff;line-height:1;margin-bottom:10px;">One Platform.<br>All Prints.</div>
+            <p style="font-size:13.5px;color:rgba(255,255,255,0.45);line-height:1.7;max-width:280px;margin:0 auto;">Upload, print, cut, dispatch — manage the complete print workflow from a single screen.</p>
+            <div style="display:inline-flex;align-items:center;gap:7px;margin-top:28px;background:#F05A28;border-radius:999px;padding:8px 20px;">
+                <div style="width:7px;height:7px;background:#fff;border-radius:50%;"></div>
+                <span style="font-size:12px;font-weight:700;color:#fff;letter-spacing:0.06em;">SYSTEM ONLINE</span>
             </div>
         </div>
     </div>
-</body>
 
+</body>
 </html>

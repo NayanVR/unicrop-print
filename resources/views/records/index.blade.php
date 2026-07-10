@@ -7,32 +7,32 @@
             <p style="font-size:13px;color:#717171;margin-top:4px;">Per-day, monthly summary with GST and full job list.</p>
         </div>
         <a href="{{ route('records.pdf', request()->query()) }}" target="_blank"
-            class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+            style="display:inline-flex;align-items:center;gap:8px;background:#EF4444;color:#fff;font-size:13.5px;font-weight:600;padding:9px 18px;border-radius:9px;text-decoration:none;">
             <i class="fa-solid fa-file-pdf"></i> Download Statement PDF
         </a>
     </div>
 
     <form method="GET" action="{{ route('records.index') }}" class="filter-bar">
         <label class="font-bold text-sm">Filter:</label>
-        <select name="month" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
+        <select name="month" onchange="this.form.submit()" 
             <option value="all" @selected($month === 'all')>All Months</option>
             @foreach (['01'=>'January','02'=>'February','03'=>'March','04'=>'April','05'=>'May','06'=>'June','07'=>'July','08'=>'August','09'=>'September','10'=>'October','11'=>'November','12'=>'December'] as $value => $label)
                 <option value="{{ $value }}" @selected($month === $value)>{{ $label }}</option>
             @endforeach
         </select>
-        <select name="year" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
+        <select name="year" onchange="this.form.submit()" 
             <option value="all" @selected($year === 'all')>All Years</option>
             @foreach (['2024','2025','2026'] as $y)
                 <option value="{{ $y }}" @selected($year === $y)>{{ $y }}</option>
             @endforeach
         </select>
-        <select name="status" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
+        <select name="status" onchange="this.form.submit()" 
             <option value="all" @selected($status === 'all')>All Statuses</option>
             @foreach (\App\Enums\JobStatus::cases() as $case)
                 <option value="{{ $case->value }}" @selected($status === $case->value)>{{ ucfirst($case->value) }}</option>
             @endforeach
         </select>
-        <select name="station_id" onchange="this.form.submit()" class="rounded border-slate-300 px-3 py-2 text-sm">
+        <select name="station_id" onchange="this.form.submit()" 
             <option value="all" @selected($stationId === 'all')>All Stations</option>
             @foreach ($stations as $station)
                 <option value="{{ $station->id }}" @selected($stationId === (string) $station->id)>{{ $station->name }}</option>
@@ -143,7 +143,7 @@
         {{-- Daily Tab --}}
         <div x-show="tab === 'daily'">
             @if ($dailySummary->count() > 0)
-                <div class="bg-white border border-slate-200 rounded-xl p-6">
+                <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:22px;">
                     <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-calendar-day text-purple-500"></i> Daily Breakdown
                     </h3>
@@ -217,7 +217,7 @@
                 </div>
             </dialog>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-6">
+            <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:22px;">
                 <div class="overflow-x-auto rounded-lg border border-slate-200">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-slate-50 text-slate-500">
