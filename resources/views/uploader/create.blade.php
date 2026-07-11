@@ -41,12 +41,33 @@
                 const newFiles = Array.from(e.target.files);
                 newFiles.forEach(f => {
                     if (!this.fileList.find(x => x.name === f.name && x.size === f.size)) {
-                        this.fileList.push({ file: f, name: f.name, size: f.size, sheets: 1, labels: [{ name: '', pcs: 1 }] });
+                        this.fileList.push({
+                            file: f, name: f.name, size: f.size, sheets: 1,
+                            labels: [{ name: '', pcs: 1 }],
+                            previewUrl: URL.createObjectURL(f),
+                            isImage: f.type.startsWith('image/'),
+                            isPdf: f.type.includes('pdf'),
+                            ext: f.name.split('.').pop().toUpperCase(),
+                        });
                     }
                 });
                 e.target.value = '';
             },
-            removeFile(i) { this.fileList.splice(i, 1); },
+            removeFile(i) {
+                URL.revokeObjectURL(this.fileList[i].previewUrl);
+                this.fileList.splice(i, 1);
+            },
+
+            lightboxOpen: false,
+            lightboxUrl: '',
+            lightboxMime: '',
+            lightboxName: '',
+            openPreview(entry) {
+                this.lightboxUrl = entry.previewUrl;
+                this.lightboxMime = entry.isPdf ? 'application/pdf' : (entry.isImage ? 'image/' : '');
+                this.lightboxName = entry.name;
+                this.lightboxOpen = true;
+            },
             addFileLabel(fi) { this.fileList[fi].labels.push({ name: '', pcs: 1 }); },
             removeFileLabel(fi, li) { if (this.fileList[fi].labels.length > 1) this.fileList[fi].labels.splice(li, 1); },
             fmtSize(bytes) {
@@ -193,18 +214,65 @@
                         <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#A0A0A0;margin-bottom:2px;">
                             <span x-text="fileList.length"></span> file(s) selected — drek ne alag sheets set karo:
                         </div>
+                        {{-- Lightbox modal --}}
+                        <template x-if="lightboxOpen">
+                            <div @click.self="lightboxOpen = false"
+                                style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;">
+                                <div style="background:#1A1A1A;border-radius:16px;overflow:hidden;max-width:90vw;max-height:90vh;width:900px;display:flex;flex-direction:column;">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#111;">
+                                        <span style="color:#fff;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="lightboxName"></span>
+                                        <button type="button" @click="lightboxOpen = false"
+                                            style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">&times;</button>
+                                    </div>
+                                    <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;min-height:300px;">
+                                        <template x-if="lightboxMime === 'application/pdf'">
+                                            <iframe :src="lightboxUrl" style="width:860px;height:80vh;border:none;"></iframe>
+                                        </template>
+                                        <template x-if="lightboxMime !== 'application/pdf' && lightboxMime.startsWith('image/')">
+                                            <img :src="lightboxUrl" :alt="lightboxName" style="max-width:100%;max-height:80vh;object-fit:contain;">
+                                        </template>
+                                        <template x-if="lightboxMime !== 'application/pdf' && !lightboxMime.startsWith('image/')">
+                                            <div style="text-align:center;padding:60px 40px;color:#888;">
+                                                <i class="fa-solid fa-file" style="font-size:64px;margin-bottom:16px;display:block;"></i>
+                                                <p style="font-size:14px;" x-text="lightboxName"></p>
+                                                <p style="font-size:12px;color:#666;margin-top:6px;">Preview not available for this file type</p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
                         <template x-for="(entry, i) in fileList" :key="i">
                             <div style="background:#F5F5F3;border:1.5px solid #E5E5E5;border-radius:10px;padding:12px 14px;">
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                    <i class="fa-solid fa-file" style="color:#A0A0A0;font-size:16px;flex-shrink:0;"></i>
+                                <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+                                    {{-- Thumbnail --}}
+                                    <button type="button" @click="openPreview(entry)"
+                                        style="flex-shrink:0;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1.5px solid #E5E5E5;background:#fff;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;">
+                                        <template x-if="entry.isImage">
+                                            <img :src="entry.previewUrl" :alt="entry.name" style="width:100%;height:100%;object-fit:cover;">
+                                        </template>
+                                        <template x-if="entry.isPdf">
+                                            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#EF4444;">
+                                                <i class="fa-solid fa-file-pdf" style="font-size:26px;"></i>
+                                                <span style="font-size:9px;font-weight:700;">PDF</span>
+                                            </div>
+                                        </template>
+                                        <template x-if="!entry.isImage && !entry.isPdf">
+                                            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#A0A0A0;">
+                                                <i class="fa-solid fa-file" style="font-size:26px;"></i>
+                                                <span style="font-size:9px;font-weight:700;text-transform:uppercase;" x-text="entry.ext"></span>
+                                            </div>
+                                        </template>
+                                    </button>
                                     <div style="flex:1;min-width:0;">
                                         <div style="font-size:13px;font-weight:600;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="entry.name"></div>
                                         <div style="font-size:11px;color:#A0A0A0;" x-text="fmtSize(entry.size)"></div>
-                                    </div>
-                                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-                                        <span style="font-size:12px;color:#555;font-weight:600;">Copies:</span>
-                                        <input type="number" x-model.number="entry.sheets" min="1"
-                                            style="width:64px;border:1.5px solid #E5E5E5;border-radius:8px;padding:6px 8px;font-size:13px;text-align:center;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+                                        <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+                                            <span style="font-size:12px;color:#555;font-weight:600;">Copies:</span>
+                                            <input type="number" x-model.number="entry.sheets" min="1"
+                                                style="width:64px;border:1.5px solid #E5E5E5;border-radius:8px;padding:5px 8px;font-size:13px;text-align:center;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+                                        </div>
                                     </div>
                                     <button type="button" @click="removeFile(i)"
                                         style="background:none;border:none;color:#EF4444;cursor:pointer;font-size:15px;padding:4px;flex-shrink:0;">
