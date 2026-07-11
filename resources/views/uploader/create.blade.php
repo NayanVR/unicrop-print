@@ -185,7 +185,7 @@
                     <i class="fa-solid fa-cloud-arrow-up" style="font-size:28px;color:#D0D0D0;margin-bottom:8px;display:block;"></i>
                     <span style="font-size:13.5px;font-weight:600;color:#555;">Click to choose files</span>
                     <span style="font-size:12px;color:#A0A0A0;display:block;margin-top:2px;">or drag & drop — multiple files supported</span>
-                    <input type="file" multiple @change="onFilesSelected($event)"
+                    <input type="file" multiple id="file-picker" @change="onFilesSelected($event)"
                         style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
                 </label>
 
@@ -403,30 +403,41 @@
                 </div>
             </div>
 
-            {{-- Submit --}}
-            <button type="submit"
-                :disabled="needsLamination === null || uploading || fileList.length === 0"
-                :style="(uploading || fileList.length === 0 || needsLamination === null) ? 'background:#D0D0D0;cursor:not-allowed;' : 'background:#111;cursor:pointer;'"
-                style="width:100%;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s;"
-                @mouseover="if(!uploading && fileList.length > 0 && needsLamination !== null) $el.style.background='#F05A28'"
-                @mouseout="if(!uploading && fileList.length > 0 && needsLamination !== null) $el.style.background='#111'">
-                <template x-if="!uploading">
-                    <span x-text="
-                        needsLamination === null ? 'Select lamination option above' :
-                        fileList.length === 0 ? 'Select at least one file' :
-                        fileList.length === 1 ? 'Upload & Send to Print' :
-                        'Upload ' + fileList.length + ' Files & Send to Print'
-                    "></span>
-                </template>
-                <i class="fa-solid fa-paper-plane" x-show="!uploading && fileList.length > 0 && needsLamination !== null"></i>
-                <span x-show="uploading" style="display:flex;align-items:center;gap:8px;">
-                    <svg style="animation:spin 1s linear infinite;width:16px;height:16px;" fill="none" viewBox="0 0 24 24">
-                        <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-                    </svg>
-                    Uploading...
-                </span>
-            </button>
+            {{-- Submit / Pick Files --}}
+            <template x-if="fileList.length === 0">
+                <label for="file-picker"
+                    style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#F05A28;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:14px;cursor:pointer;transition:background 0.15s;"
+                    onmouseover="this.style.background='#D04820'"
+                    onmouseout="this.style.background='#F05A28'">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    Choose Files to Upload
+                </label>
+            </template>
+
+            <template x-if="fileList.length > 0">
+                <button type="submit"
+                    :disabled="needsLamination === null || uploading"
+                    :style="(uploading || needsLamination === null) ? 'background:#D0D0D0;cursor:not-allowed;' : 'background:#111;cursor:pointer;'"
+                    style="width:100%;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s;"
+                    @mouseover="if(!uploading && needsLamination !== null) $el.style.background='#F05A28'"
+                    @mouseout="if(!uploading && needsLamination !== null) $el.style.background='#111'">
+                    <template x-if="!uploading">
+                        <span x-text="
+                            needsLamination === null ? 'Select lamination option above' :
+                            fileList.length === 1 ? 'Upload & Send to Print' :
+                            'Upload ' + fileList.length + ' Files & Send to Print'
+                        "></span>
+                    </template>
+                    <i class="fa-solid fa-paper-plane" x-show="!uploading && needsLamination !== null"></i>
+                    <span x-show="uploading" style="display:flex;align-items:center;gap:8px;">
+                        <svg style="animation:spin 1s linear infinite;width:16px;height:16px;" fill="none" viewBox="0 0 24 24">
+                            <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        Uploading...
+                    </span>
+                </button>
+            </template>
         </form>
     </div>{{-- end card --}}
 
