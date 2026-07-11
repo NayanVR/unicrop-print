@@ -482,7 +482,7 @@
                 <button type="submit"
                     :disabled="needsLamination === null || uploading"
                     :style="(uploading || needsLamination === null) ? 'background:#D0D0D0;cursor:not-allowed;' : 'background:#F05A28;cursor:pointer;'"
-                    style="width:100%;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s;"
+                    style="width:100%;box-sizing:border-box;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;border:none;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s;"
                     @mouseover="if(!uploading && needsLamination !== null) $el.style.background='#D04820'"
                     @mouseout="if(!uploading && needsLamination !== null) $el.style.background='#F05A28'">
                     <template x-if="!uploading">
