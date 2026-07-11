@@ -25,7 +25,7 @@ class PrinterController extends Controller
             $sort = 'created_at';
         }
 
-        $query = PrintJob::with(['size', 'printStation'])->where('status', 'pending');
+        $query = PrintJob::with(['size', 'printStation', 'jobLabels'])->where('status', 'pending');
 
         if (! $user->isAdmin()) {
             $query->whereIn('print_station_id', $user->printStations()->pluck('print_stations.id'));

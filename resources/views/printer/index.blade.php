@@ -183,7 +183,20 @@
                                     @if ($job->mime_type)
                                         &middot; {{ $job->mime_type }}
                                     @endif
-                                </span><br>
+                                </span>
+                                @if ($job->jobLabels->isNotEmpty())
+                                    <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+                                        @foreach ($job->jobLabels as $lbl)
+                                            <span style="display:inline-flex;align-items:center;gap:5px;background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;width:fit-content;">
+                                                <i class="fa-solid fa-tag" style="font-size:9px;"></i>
+                                                {{ $lbl->label_name }}
+                                                &nbsp;·&nbsp;
+                                                {{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = <strong>{{ $lbl->pcs_per_sheet * $job->sheets }} pcs</strong>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <br>
                                 @if ($job->fileUrl())
                                     <div class="flex flex-wrap gap-1 mt-1" x-data="{ copied: false }">
                                         <a href="{{ $job->fileUrl() }}" target="_blank" class="inline-flex items-center gap-1 bg-purple-500 text-white text-xs px-3 py-1 rounded">
