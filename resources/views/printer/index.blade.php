@@ -187,11 +187,9 @@
                                 @if ($job->jobLabels->isNotEmpty())
                                     <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
                                         @foreach ($job->jobLabels as $lbl)
-                                            <span style="display:inline-flex;align-items:center;gap:5px;background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;width:fit-content;">
-                                                <i class="fa-solid fa-tag" style="font-size:9px;"></i>
-                                                {{ $lbl->label_name }}
-                                                &nbsp;·&nbsp;
-                                                {{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = <strong>{{ $lbl->pcs_per_sheet * $job->sheets }} pcs</strong>
+                                            <span style="display:inline-flex;align-items:center;gap:5px;background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;width:fit-content;white-space:nowrap;">
+                                                <i class="fa-solid fa-tag" style="font-size:9px;flex-shrink:0;"></i>
+                                                {{ $lbl->label_name }} &nbsp;·&nbsp; {{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs
                                             </span>
                                         @endforeach
                                     </div>
