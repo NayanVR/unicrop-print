@@ -185,13 +185,16 @@
                                     @endif
                                 </span>
                                 @if ($job->jobLabels->isNotEmpty())
-                                    <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
-                                        @foreach ($job->jobLabels as $lbl)
-                                            <span style="display:inline-flex;align-items:center;gap:5px;background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;width:fit-content;white-space:nowrap;">
-                                                <i class="fa-solid fa-tag" style="font-size:9px;flex-shrink:0;"></i>
-                                                {{ $lbl->label_name }} &nbsp;·&nbsp; {{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs
-                                            </span>
-                                        @endforeach
+                                    <div style="margin-top:7px;background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:8px;padding:7px 10px;">
+                                        <div style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#C2410C;margin-bottom:5px;">Sheet Contents</div>
+                                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                                            @foreach ($job->jobLabels as $lbl)
+                                                <tr>
+                                                    <td style="color:#333;font-weight:600;padding:1px 0;">{{ $lbl->label_name }}</td>
+                                                    <td style="color:#C2410C;font-weight:700;text-align:right;white-space:nowrap;padding:1px 0;">{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</td>
+                                                </tr>
+                                            @endforeach
+                                        </table>
                                     </div>
                                 @endif
                                 <br>
