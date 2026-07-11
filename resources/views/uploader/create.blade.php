@@ -23,147 +23,153 @@
         </div>
     @endif
 
-    <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:28px;max-width:600px;" x-data="{
-        rates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->size_id => (float) $r->rate])])->toJson() }},
-        cuttingRates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationCuttingRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->cutting_type_id => (float) $r->rate])])->toJson() }},
-        laminationRates: {{ $stations->mapWithKeys(fn ($st) => [$st->id => ($stationLaminationRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->lamination_type_id => (float) $r->rate])])->toJson() }},
-        stationsRequireCutting: {{ $stations->mapWithKeys(fn ($st) => [$st->id => (bool) $st->requires_cutting])->toJson() }},
-        stationId: '{{ $stations->firstWhere('is_default', true)?->id ?? $stations->first()?->id }}',
-        sizeId: '{{ $sizes->firstWhere('is_default', true)?->id ?? $sizes->first()?->id }}',
-        needsCutting: false,
-        cuttingTypeId: '{{ $cuttingTypes->firstWhere('is_default', true)?->id ?? $cuttingTypes->first()?->id }}',
-        needsLamination: null,
-        laminationTypeId: '{{ $laminationTypes->firstWhere('is_default', true)?->id ?? $laminationTypes->first()?->id }}',
-        labels: [{ name: '', pcs: 1 }],
-        addLabelRow() { this.labels.push({ name: '', pcs: 1 }) },
-        removeLabelRow(i) { if (this.labels.length > 1) this.labels.splice(i, 1) },
+    <script>
+    function uploaderData() {
+        return {
+            rates: @json($stations->mapWithKeys(fn ($st) => [$st->id => ($stationRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->size_id => (float) $r->rate])])),
+            cuttingRates: @json($stations->mapWithKeys(fn ($st) => [$st->id => ($stationCuttingRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->cutting_type_id => (float) $r->rate])])),
+            laminationRates: @json($stations->mapWithKeys(fn ($st) => [$st->id => ($stationLaminationRates[$st->id] ?? collect())->mapWithKeys(fn ($r) => [$r->lamination_type_id => (float) $r->rate])])),
+            stationsRequireCutting: @json($stations->mapWithKeys(fn ($st) => [$st->id => (bool) $st->requires_cutting])),
+            stationId: '{{ $stations->firstWhere('is_default', true)?->id ?? $stations->first()?->id }}',
+            sizeId: '{{ $sizes->firstWhere('is_default', true)?->id ?? $sizes->first()?->id }}',
+            needsCutting: false,
+            cuttingTypeId: '{{ $cuttingTypes->firstWhere('is_default', true)?->id ?? $cuttingTypes->first()?->id }}',
+            needsLamination: null,
+            laminationTypeId: '{{ $laminationTypes->firstWhere('is_default', true)?->id ?? $laminationTypes->first()?->id }}',
+            labels: [{ name: '', pcs: 1 }],
+            addLabelRow() { this.labels.push({ name: '', pcs: 1 }); },
+            removeLabelRow(i) { if (this.labels.length > 1) this.labels.splice(i, 1); },
 
-        // Multi-file state
-        fileList: [],
-        onFilesSelected(e) {
-            const newFiles = Array.from(e.target.files);
-            newFiles.forEach(f => {
-                if (!this.fileList.find(x => x.name === f.name && x.size === f.size)) {
-                    this.fileList.push({ file: f, name: f.name, size: f.size, sheets: 1 });
-                }
-            });
-            e.target.value = '';
-        },
-        removeFile(i) { this.fileList.splice(i, 1); },
-        fmtSize(bytes) {
-            if (bytes >= 1048576) return (bytes/1048576).toFixed(1) + ' MB';
-            if (bytes >= 1024) return (bytes/1024).toFixed(0) + ' KB';
-            return bytes + ' B';
-        },
-
-        // Upload state
-        uploading: false,
-        uploadDone: false,
-        uploadError: '',
-        currentFileIdx: 0,
-        currentFilePct: 0,
-        totalDone: 0,
-
-        get overallPct() {
-            if (this.fileList.length === 0) return 0;
-            const perFile = 100 / this.fileList.length;
-            return Math.round(this.totalDone * perFile + (this.currentFilePct / 100) * perFile);
-        },
-
-        genUUID() {
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
-        },
-
-        async uploadOneFile(file, sheets, csrfToken, chunkUrl, sharedFields) {
-            const CHUNK_SIZE = 512 * 1024;
-            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-            const uploadId = this.genUUID();
-
-            for (let i = 0; i < totalChunks; i++) {
-                const fd = new FormData();
-                fd.append('_token', csrfToken);
-                fd.append('upload_id', uploadId);
-                fd.append('chunk_index', i);
-                fd.append('total_chunks', totalChunks);
-                fd.append('chunk', file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE), file.name);
-                fd.append('original_name', file.name);
-
-                if (i === totalChunks - 1) {
-                    for (const [k, v] of Object.entries(sharedFields)) fd.append(k, v);
-                    fd.set('sheets', sheets);
-                    this.labels.forEach((row, li) => {
-                        fd.append(`labels[${li}][name]`, row.name);
-                        fd.append(`labels[${li}][pcs]`, row.pcs);
-                    });
-                }
-
-                const res = await new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', chunkUrl);
-                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                    xhr.addEventListener('load', () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            try { resolve(JSON.parse(xhr.responseText)); }
-                            catch (e) { reject(new Error('Invalid server response')); }
-                        } else if ((xhr.status === 502 || xhr.status === 504)) {
-                            reject(new Error('Gateway error ' + xhr.status + '. Please retry.'));
-                        } else {
-                            const tmp = document.createElement('div');
-                            tmp.innerHTML = xhr.responseText;
-                            reject(new Error(tmp.textContent.trim().replace(/\s+/g,' ').substring(0, 120) || 'HTTP ' + xhr.status));
-                        }
-                    });
-                    xhr.addEventListener('error', () => reject(new Error('Network error')));
-                    xhr.send(fd);
+            fileList: [],
+            onFilesSelected(e) {
+                const newFiles = Array.from(e.target.files);
+                newFiles.forEach(f => {
+                    if (!this.fileList.find(x => x.name === f.name && x.size === f.size)) {
+                        this.fileList.push({ file: f, name: f.name, size: f.size, sheets: 1 });
+                    }
                 });
+                e.target.value = '';
+            },
+            removeFile(i) { this.fileList.splice(i, 1); },
+            fmtSize(bytes) {
+                if (bytes >= 1048576) return (bytes/1048576).toFixed(1) + ' MB';
+                if (bytes >= 1024) return (bytes/1024).toFixed(0) + ' KB';
+                return bytes + ' B';
+            },
 
-                this.currentFilePct = Math.round(((i + 1) / totalChunks) * 100);
-                if (res.status === 'done') return;
-            }
-        },
+            uploading: false,
+            uploadDone: false,
+            uploadError: '',
+            currentFileIdx: 0,
+            currentFilePct: 0,
+            totalDone: 0,
 
-        async submitForm(e) {
-            if (this.needsLamination === null || this.fileList.length === 0) return;
+            get overallPct() {
+                if (this.fileList.length === 0) return 0;
+                const perFile = 100 / this.fileList.length;
+                return Math.round(this.totalDone * perFile + (this.currentFilePct / 100) * perFile);
+            },
 
-            this.uploading = true;
-            this.uploadDone = false;
-            this.uploadError = '';
-            this.currentFileIdx = 0;
-            this.currentFilePct = 0;
-            this.totalDone = 0;
+            genUUID() {
+                return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+            },
 
-            const form = e.target.closest('form');
-            const csrfToken = form.querySelector('[name=_token]').value;
-            const chunkUrl = '{{ route('uploader.chunk') }}';
+            async uploadOneFile(file, sheets, csrfToken, chunkUrl, sharedFields) {
+                const CHUNK_SIZE = 512 * 1024;
+                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+                const uploadId = this.genUUID();
 
-            const formData = new FormData(form);
-            const sharedFields = {};
-            for (const [k, v] of formData.entries()) {
-                if (!['_token', '_method'].includes(k)) sharedFields[k] = v;
-            }
+                for (let i = 0; i < totalChunks; i++) {
+                    const fd = new FormData();
+                    fd.append('_token', csrfToken);
+                    fd.append('upload_id', uploadId);
+                    fd.append('chunk_index', i);
+                    fd.append('total_chunks', totalChunks);
+                    fd.append('chunk', file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE), file.name);
+                    fd.append('original_name', file.name);
 
-            for (let fi = 0; fi < this.fileList.length; fi++) {
-                this.currentFileIdx = fi;
-                this.currentFilePct = 0;
-                const entry = this.fileList[fi];
-                try {
-                    await this.uploadOneFile(entry.file, entry.sheets, csrfToken, chunkUrl, sharedFields);
-                    this.totalDone = fi + 1;
-                } catch (err) {
-                    this.uploading = false;
-                    this.uploadError = 'File \"' + entry.name + '\" upload failed: ' + (err.message || 'Please try again.');
-                    return;
+                    if (i === totalChunks - 1) {
+                        for (const [k, v] of Object.entries(sharedFields)) fd.append(k, v);
+                        fd.set('sheets', sheets);
+                        this.labels.forEach((row, li) => {
+                            fd.append('labels[' + li + '][name]', row.name);
+                            fd.append('labels[' + li + '][pcs]', row.pcs);
+                        });
+                    }
+
+                    const res = await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', chunkUrl);
+                        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                try { resolve(JSON.parse(xhr.responseText)); }
+                                catch (ex) { reject(new Error('Invalid server response')); }
+                            } else if (xhr.status === 502 || xhr.status === 504) {
+                                reject(new Error('Gateway error ' + xhr.status));
+                            } else {
+                                const tmp = document.createElement('div');
+                                tmp.innerHTML = xhr.responseText;
+                                reject(new Error(tmp.textContent.trim().replace(/\s+/g, ' ').substring(0, 120) || 'HTTP ' + xhr.status));
+                            }
+                        });
+                        xhr.addEventListener('error', () => reject(new Error('Network error')));
+                        xhr.send(fd);
+                    });
+
+                    this.currentFilePct = Math.round(((i + 1) / totalChunks) * 100);
+                    if (res.status === 'done') return;
                 }
-            }
+            },
 
-            this.uploadDone = true;
-            setTimeout(() => {
-                window.location = '{{ route('uploader.create') }}?uploaded=' + this.fileList.length;
-            }, 800);
-        },
-    }" @submit.prevent="submitForm($event)">
-        <form method="POST" action="{{ route('uploader.store') }}" enctype="multipart/form-data">
+            async submitForm(e) {
+                if (this.needsLamination === null || this.fileList.length === 0) return;
+
+                this.uploading = true;
+                this.uploadDone = false;
+                this.uploadError = '';
+                this.currentFileIdx = 0;
+                this.currentFilePct = 0;
+                this.totalDone = 0;
+
+                const form = e.target;
+                const csrfToken = form.querySelector('[name=_token]').value;
+                const chunkUrl = '{{ route('uploader.chunk') }}';
+
+                const formData = new FormData(form);
+                const sharedFields = {};
+                for (const [k, v] of formData.entries()) {
+                    if (k !== '_token' && k !== '_method') sharedFields[k] = v;
+                }
+
+                for (let fi = 0; fi < this.fileList.length; fi++) {
+                    this.currentFileIdx = fi;
+                    this.currentFilePct = 0;
+                    const entry = this.fileList[fi];
+                    try {
+                        await this.uploadOneFile(entry.file, entry.sheets, csrfToken, chunkUrl, sharedFields);
+                        this.totalDone = fi + 1;
+                    } catch (err) {
+                        this.uploading = false;
+                        this.uploadError = 'File "' + entry.name + '" upload failed: ' + (err.message || 'Please try again.');
+                        return;
+                    }
+                }
+
+                this.uploadDone = true;
+                const count = this.fileList.length;
+                setTimeout(() => {
+                    window.location = '{{ route('uploader.create') }}?uploaded=' + count;
+                }, 800);
+            },
+        };
+    }
+    </script>
+
+    <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:28px;max-width:600px;">
+        <form method="POST" action="{{ route('uploader.store') }}" enctype="multipart/form-data"
+            x-data="uploaderData()" @submit.prevent="submitForm($event)">
             @csrf
 
             {{-- File drop zone --}}
@@ -421,7 +427,7 @@
                 </span>
             </button>
         </form>
-    </div>
+    </div>{{-- end card --}}
 
     {{-- Today's label summary --}}
     @if ($dailySummary->isNotEmpty())
