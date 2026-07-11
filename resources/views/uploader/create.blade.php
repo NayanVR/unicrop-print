@@ -537,17 +537,24 @@
                                         <button type="submit" style="background:#F05A28;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Save</button>
                                         <button type="button" @click="editNote = false" style="background:none;border:none;font-size:12px;color:#A0A0A0;cursor:pointer;">Cancel</button>
                                     </form>
-                                    @if ($job->jobLabels->isNotEmpty())
-                                        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
-                                            @foreach ($job->jobLabels as $lbl)
-                                                <span style="background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:11px;padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;">
-                                                    {{ $lbl->label_name }}
-                                                    <strong>{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</strong>
-                                                </span>
-                                            @endforeach
+                                    <div style="margin-top:8px;background:#FAFAF8;border:1.5px solid #E5E5E5;border-radius:9px;padding:8px 12px;">
+                                        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#A0A0A0;margin-bottom:5px;display:flex;align-items:center;gap:5px;">
+                                            <i class="fa-solid fa-tags" style="color:#F05A28;"></i> Sheet Contents
                                         </div>
-                                    @endif
-                                    <div style="font-size:11.5px;color:#A0A0A0;margin-top:4px;">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
+                                        @if ($job->jobLabels->isNotEmpty())
+                                            <div style="display:flex;flex-direction:column;gap:4px;">
+                                                @foreach ($job->jobLabels as $lbl)
+                                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                                                        <span style="font-size:12.5px;font-weight:600;color:#333;">{{ $lbl->label_name }}</span>
+                                                        <span style="font-size:12px;color:#C2410C;font-weight:700;white-space:nowrap;">{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span style="font-size:12px;color:#BDBDBD;font-style:italic;">No labels set</span>
+                                        @endif
+                                    </div>
+                                    <div style="font-size:11.5px;color:#A0A0A0;margin-top:6px;">{{ $job->created_at->format('d/m/Y h:i A') }}</div>
                                 </div>
                                 @if ($job->status->value === 'pending')
                                     <form method="POST" action="{{ route('jobs.destroy', $job) }}"
@@ -605,17 +612,24 @@
                                         <span style="background:#F5F5F3;color:#555;font-size:10.5px;padding:2px 8px;border-radius:5px;border:1px solid #E5E5E5;">{{ $job->sheets }} copies</span>
                                     </div>
                                     <div style="font-size:13px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $job->note }}</div>
-                                    @if ($job->jobLabels->isNotEmpty())
-                                        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
-                                            @foreach ($job->jobLabels as $lbl)
-                                                <span style="background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:11px;padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;">
-                                                    {{ $lbl->label_name }}
-                                                    <strong>{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</strong>
-                                                </span>
-                                            @endforeach
+                                    <div style="margin-top:8px;background:#FAFAF8;border:1.5px solid #E5E5E5;border-radius:9px;padding:8px 12px;">
+                                        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#A0A0A0;margin-bottom:5px;display:flex;align-items:center;gap:5px;">
+                                            <i class="fa-solid fa-tags" style="color:#F05A28;"></i> Sheet Contents
                                         </div>
-                                    @endif
-                                    <div style="font-size:11.5px;color:#A0A0A0;margin-top:4px;">
+                                        @if ($job->jobLabels->isNotEmpty())
+                                            <div style="display:flex;flex-direction:column;gap:4px;">
+                                                @foreach ($job->jobLabels as $lbl)
+                                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                                                        <span style="font-size:12.5px;font-weight:600;color:#333;">{{ $lbl->label_name }}</span>
+                                                        <span style="font-size:12px;color:#C2410C;font-weight:700;white-space:nowrap;">{{ $lbl->pcs_per_sheet }} × {{ $job->sheets }} = {{ $lbl->pcs_per_sheet * $job->sheets }} pcs</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span style="font-size:12px;color:#BDBDBD;font-style:italic;">No labels set</span>
+                                        @endif
+                                    </div>
+                                    <div style="font-size:11.5px;color:#A0A0A0;margin-top:6px;">
                                         {{ $job->uploader?->name ?? '—' }} · {{ $job->created_at->format('d/m/Y h:i A') }}
                                     </div>
                                 </div>
