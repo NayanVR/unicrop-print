@@ -535,7 +535,37 @@
             'completed' => ['label' => 'Completed', 'bg' => '#F0FDF4', 'color' => '#15803D'],
         ];
     @endphp
-    <div style="margin-top:32px;max-width:600px;" x-data="{ tab: 'my' }">
+    <div style="margin-top:32px;max-width:600px;" x-data="{ tab: 'my', previewUrl: '', previewMime: '', previewName: '', previewOpen: false }">
+
+        {{-- File preview modal --}}
+        <template x-if="previewOpen">
+            <div @click.self="previewOpen = false"
+                style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:20px;">
+                <div style="background:#1A1A1A;border-radius:16px;overflow:hidden;max-width:92vw;max-height:92vh;width:960px;display:flex;flex-direction:column;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#111;flex-shrink:0;">
+                        <span style="color:#fff;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="previewName"></span>
+                        <button type="button" @click="previewOpen = false"
+                            style="background:none;border:none;color:#aaa;font-size:24px;cursor:pointer;line-height:1;padding:0 4px;">&times;</button>
+                    </div>
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;background:#000;min-height:300px;">
+                        <template x-if="previewMime === 'application/pdf'">
+                            <iframe :src="previewUrl" style="width:100%;height:85vh;border:none;"></iframe>
+                        </template>
+                        <template x-if="previewMime.startsWith('image/')">
+                            <img :src="previewUrl" :alt="previewName" style="max-width:100%;max-height:85vh;object-fit:contain;">
+                        </template>
+                        <template x-if="previewMime !== 'application/pdf' && !previewMime.startsWith('image/')">
+                            <div style="text-align:center;padding:60px 40px;color:#666;">
+                                <i class="fa-solid fa-file" style="font-size:64px;margin-bottom:16px;display:block;color:#555;"></i>
+                                <p style="font-size:14px;color:#aaa;" x-text="previewName"></p>
+                                <p style="font-size:12px;color:#666;margin-top:6px;">Preview not available for this file type</p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <div style="display:flex;gap:6px;margin-bottom:16px;background:#F5F5F3;border-radius:12px;padding:5px;width:fit-content;">
             <button type="button" @click="tab = 'my'"
                 :style="tab === 'my' ? 'background:#111;color:#fff;' : 'background:transparent;color:#717171;'"
@@ -565,18 +595,23 @@
                         <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:12px;padding:14px 16px;" x-data="{ editNote: false }">
                             <div style="display:flex;align-items:flex-start;gap:12px;">
                                 @if ($job->fileUrl() && str_contains($job->mime_type ?? '', 'pdf'))
-                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#FFF0F0;border:1.5px solid #FECACA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#EF4444;">
+                                    <button type="button" @click="previewUrl='{{ $job->fileUrl() }}';previewMime='application/pdf';previewName='{{ addslashes($job->file_name) }}';previewOpen=true"
+                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#FFF0F0;border:1.5px solid #FECACA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#EF4444;cursor:pointer;">
                                         <i class="fa-solid fa-file-pdf" style="font-size:36px;"></i>
                                         <span style="font-size:10px;font-weight:700;">PDF</span>
-                                    </div>
+                                    </button>
                                 @elseif ($job->fileUrl() && $isImage)
-                                    <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
-                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;object-fit:cover;border:1.5px solid #E5E5E5;">
+                                    <button type="button" @click="previewUrl='{{ $job->fileUrl() }}';previewMime='{{ $job->mime_type }}';previewName='{{ addslashes($job->file_name) }}';previewOpen=true"
+                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;overflow:hidden;border:1.5px solid #E5E5E5;cursor:pointer;padding:0;background:none;">
+                                        <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                            style="width:100%;height:100%;object-fit:cover;">
+                                    </button>
                                 @elseif ($job->fileUrl())
-                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#999;">
+                                    <button type="button" @click="previewUrl='{{ $job->fileUrl() }}';previewMime='{{ $job->mime_type ?? '' }}';previewName='{{ addslashes($job->file_name) }}';previewOpen=true"
+                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#999;cursor:pointer;">
                                         <i class="fa-solid fa-file" style="font-size:36px;"></i>
                                         <span style="font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;">{{ strtoupper(pathinfo($job->file_name, PATHINFO_EXTENSION)) }}</span>
-                                    </div>
+                                    </button>
                                 @else
                                     <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
                                         <i class="fa-solid fa-image" style="font-size:32px;"></i>
@@ -654,18 +689,23 @@
                         <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:12px;padding:14px 16px;">
                             <div style="display:flex;align-items:flex-start;gap:12px;">
                                 @if ($job->fileUrl() && str_contains($job->mime_type ?? '', 'pdf'))
-                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#FFF0F0;border:1.5px solid #FECACA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#EF4444;">
+                                    <button type="button" @click="previewUrl='{{ $job->fileUrl() }}';previewMime='application/pdf';previewName='{{ addslashes($job->file_name) }}';previewOpen=true"
+                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#FFF0F0;border:1.5px solid #FECACA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#EF4444;cursor:pointer;">
                                         <i class="fa-solid fa-file-pdf" style="font-size:36px;"></i>
                                         <span style="font-size:10px;font-weight:700;">PDF</span>
-                                    </div>
+                                    </button>
                                 @elseif ($job->fileUrl() && $isImage2)
-                                    <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
-                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;object-fit:cover;border:1.5px solid #E5E5E5;">
+                                    <button type="button" @click="previewUrl='{{ $job->fileUrl() }}';previewMime='{{ $job->mime_type }}';previewName='{{ addslashes($job->file_name) }}';previewOpen=true"
+                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;overflow:hidden;border:1.5px solid #E5E5E5;cursor:pointer;padding:0;background:none;">
+                                        <img src="{{ $job->fileUrl() }}" alt="{{ $job->file_name }}"
+                                            style="width:100%;height:100%;object-fit:cover;">
+                                    </button>
                                 @elseif ($job->fileUrl())
-                                    <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#999;">
+                                    <button type="button" @click="previewUrl='{{ $job->fileUrl() }}';previewMime='{{ $job->mime_type ?? '' }}';previewName='{{ addslashes($job->file_name) }}';previewOpen=true"
+                                        style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#999;cursor:pointer;">
                                         <i class="fa-solid fa-file" style="font-size:36px;"></i>
                                         <span style="font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;">{{ strtoupper(pathinfo($job->file_name, PATHINFO_EXTENSION)) }}</span>
-                                    </div>
+                                    </button>
                                 @else
                                     <div style="width:120px;height:120px;flex-shrink:0;border-radius:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;display:flex;align-items:center;justify-content:center;color:#CCC;">
                                         <i class="fa-solid fa-image" style="font-size:32px;"></i>
