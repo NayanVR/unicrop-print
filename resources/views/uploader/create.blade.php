@@ -169,7 +169,8 @@
 
     <div style="background:#fff;border:1.5px solid #E5E5E5;border-radius:14px;padding:28px;max-width:600px;">
         <form method="POST" action="{{ route('uploader.store') }}" enctype="multipart/form-data"
-            x-data="uploaderData()" @submit.prevent="submitForm($event)">
+            x-data="uploaderData()" @submit.prevent="submitForm($event)"
+            style="width:100%;display:block;">
             @csrf
 
             {{-- File drop zone --}}
