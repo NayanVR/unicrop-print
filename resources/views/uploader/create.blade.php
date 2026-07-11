@@ -36,21 +36,19 @@
             cuttingTypeId: '{{ $cuttingTypes->firstWhere('is_default', true)?->id ?? $cuttingTypes->first()?->id }}',
             needsLamination: null,
             laminationTypeId: '{{ $laminationTypes->firstWhere('is_default', true)?->id ?? $laminationTypes->first()?->id }}',
-            labels: [{ name: '', pcs: 1 }],
-            addLabelRow() { this.labels.push({ name: '', pcs: 1 }); },
-            removeLabelRow(i) { if (this.labels.length > 1) this.labels.splice(i, 1); },
-
             fileList: [],
             onFilesSelected(e) {
                 const newFiles = Array.from(e.target.files);
                 newFiles.forEach(f => {
                     if (!this.fileList.find(x => x.name === f.name && x.size === f.size)) {
-                        this.fileList.push({ file: f, name: f.name, size: f.size, sheets: 1 });
+                        this.fileList.push({ file: f, name: f.name, size: f.size, sheets: 1, labels: [{ name: '', pcs: 1 }] });
                     }
                 });
                 e.target.value = '';
             },
             removeFile(i) { this.fileList.splice(i, 1); },
+            addFileLabel(fi) { this.fileList[fi].labels.push({ name: '', pcs: 1 }); },
+            removeFileLabel(fi, li) { if (this.fileList[fi].labels.length > 1) this.fileList[fi].labels.splice(li, 1); },
             fmtSize(bytes) {
                 if (bytes >= 1048576) return (bytes/1048576).toFixed(1) + ' MB';
                 if (bytes >= 1024) return (bytes/1024).toFixed(0) + ' KB';
@@ -75,7 +73,7 @@
                     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
             },
 
-            async uploadOneFile(file, sheets, csrfToken, chunkUrl, sharedFields) {
+            async uploadOneFile(file, sheets, labels, csrfToken, chunkUrl, sharedFields) {
                 const CHUNK_SIZE = 512 * 1024;
                 const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
                 const uploadId = this.genUUID();
@@ -92,7 +90,7 @@
                     if (i === totalChunks - 1) {
                         for (const [k, v] of Object.entries(sharedFields)) fd.append(k, v);
                         fd.set('sheets', sheets);
-                        this.labels.forEach((row, li) => {
+                        labels.forEach((row, li) => {
                             fd.append('labels[' + li + '][name]', row.name);
                             fd.append('labels[' + li + '][pcs]', row.pcs);
                         });
@@ -148,7 +146,7 @@
                     this.currentFilePct = 0;
                     const entry = this.fileList[fi];
                     try {
-                        await this.uploadOneFile(entry.file, entry.sheets, csrfToken, chunkUrl, sharedFields);
+                        await this.uploadOneFile(entry.file, entry.sheets, entry.labels, csrfToken, chunkUrl, sharedFields);
                         this.totalDone = fi + 1;
                     } catch (err) {
                         this.uploading = false;
@@ -196,21 +194,48 @@
                             <span x-text="fileList.length"></span> file(s) selected — drek ne alag sheets set karo:
                         </div>
                         <template x-for="(entry, i) in fileList" :key="i">
-                            <div style="display:flex;align-items:center;gap:10px;background:#F5F5F3;border:1.5px solid #E5E5E5;border-radius:10px;padding:10px 14px;">
-                                <i class="fa-solid fa-file" style="color:#A0A0A0;font-size:16px;flex-shrink:0;"></i>
-                                <div style="flex:1;min-width:0;">
-                                    <div style="font-size:13px;font-weight:600;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="entry.name"></div>
-                                    <div style="font-size:11px;color:#A0A0A0;" x-text="fmtSize(entry.size)"></div>
+                            <div style="background:#F5F5F3;border:1.5px solid #E5E5E5;border-radius:10px;padding:12px 14px;">
+                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                                    <i class="fa-solid fa-file" style="color:#A0A0A0;font-size:16px;flex-shrink:0;"></i>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:13px;font-weight:600;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" x-text="entry.name"></div>
+                                        <div style="font-size:11px;color:#A0A0A0;" x-text="fmtSize(entry.size)"></div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                                        <span style="font-size:12px;color:#555;font-weight:600;">Copies:</span>
+                                        <input type="number" x-model.number="entry.sheets" min="1"
+                                            style="width:64px;border:1.5px solid #E5E5E5;border-radius:8px;padding:6px 8px;font-size:13px;text-align:center;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+                                    </div>
+                                    <button type="button" @click="removeFile(i)"
+                                        style="background:none;border:none;color:#EF4444;cursor:pointer;font-size:15px;padding:4px;flex-shrink:0;">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
                                 </div>
-                                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-                                    <span style="font-size:12px;color:#555;font-weight:600;">Copies:</span>
-                                    <input type="number" x-model.number="entry.sheets" min="1"
-                                        style="width:64px;border:1.5px solid #E5E5E5;border-radius:8px;padding:6px 8px;font-size:13px;text-align:center;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+                                {{-- Per-file sheet contents --}}
+                                <div style="border-top:1px solid #E5E5E5;padding-top:10px;">
+                                    <div style="font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#A0A0A0;margin-bottom:8px;">
+                                        <i class="fa-solid fa-tags"></i> Sheet Contents (Optional)
+                                    </div>
+                                    <template x-for="(row, li) in entry.labels" :key="li">
+                                        <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">
+                                            <input type="text" x-model="row.name"
+                                                list="label-suggestions"
+                                                placeholder="Label name"
+                                                style="flex:1;border:1.5px solid #E5E5E5;border-radius:8px;padding:7px 10px;font-size:12.5px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#fff;">
+                                            <input type="number" x-model.number="row.pcs" min="1"
+                                                placeholder="Pcs"
+                                                style="width:62px;border:1.5px solid #E5E5E5;border-radius:8px;padding:7px 6px;font-size:12.5px;text-align:center;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#fff;">
+                                            <button type="button" @click="removeFileLabel(i, li)" x-show="entry.labels.length > 1"
+                                                style="background:none;border:none;color:#EF4444;cursor:pointer;padding:4px;font-size:13px;">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <button type="button" @click="addFileLabel(i)"
+                                        style="background:none;border:none;color:#F05A28;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0;">
+                                        <i class="fa-solid fa-plus"></i> Add label
+                                    </button>
                                 </div>
-                                <button type="button" @click="removeFile(i)"
-                                    style="background:none;border:none;color:#EF4444;cursor:pointer;font-size:15px;padding:4px;flex-shrink:0;">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
                             </div>
                         </template>
                     </div>
@@ -307,40 +332,11 @@
                 </div>
             </div>
 
-            {{-- Sheet contents / labels --}}
-            <div style="margin-bottom:18px;">
-                <label style="display:block;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;margin-bottom:6px;">
-                    <i class="fa-solid fa-tags"></i> Sheet Contents (Optional)
-                </label>
-                <p style="font-size:12px;color:#A0A0A0;margin-bottom:12px;">Badhi files ne same label apply thase.</p>
-
-                <datalist id="label-suggestions">
-                    @foreach ($labelSuggestions as $s)
-                        <option value="{{ $s }}">
-                    @endforeach
-                </datalist>
-
-                <template x-for="(row, i) in labels" :key="i">
-                    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
-                        <input type="text" :name="`labels[${i}][name]`" x-model="row.name"
-                            list="label-suggestions"
-                            placeholder="Label name (e.g. Ultra Gold 1ltr)"
-                            style="flex:1;border:1.5px solid #E5E5E5;border-radius:9px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
-                        <input type="number" :name="`labels[${i}][pcs]`" x-model.number="row.pcs" min="1"
-                            placeholder="Pcs"
-                            style="width:70px;border:1.5px solid #E5E5E5;border-radius:9px;padding:9px 8px;font-size:13px;text-align:center;font-family:'DM Sans',sans-serif;color:#111;outline:none;background:#FAFAF8;">
-                        <button type="button" @click="removeLabelRow(i)" x-show="labels.length > 1"
-                            style="background:none;border:none;color:#EF4444;cursor:pointer;padding:6px;border-radius:6px;font-size:14px;">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                </template>
-
-                <button type="button" @click="addLabelRow()"
-                    style="background:none;border:none;color:#F05A28;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;margin-top:4px;">
-                    <i class="fa-solid fa-plus"></i> Add another label
-                </button>
-            </div>
+            <datalist id="label-suggestions">
+                @foreach ($labelSuggestions as $s)
+                    <option value="{{ $s }}">
+                @endforeach
+            </datalist>
 
             {{-- Upload error --}}
             <div x-show="uploadError" style="background:#FFF0F0;border:1.5px solid #FECACA;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;">
